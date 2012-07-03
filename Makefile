@@ -1,6 +1,6 @@
 ###############################################################################
 #
-# Name:    Example
+# Name:    DLang Scheme
 # Type:    Application
 # Author:  Mike Lowis
 # License: BSD 2-Clause
@@ -11,12 +11,6 @@
 #-----------------------------
 # Function for generating an file list
 flist = $(shell env find $(1) -name *.$(strip $(2)) -print)
-
-# Function for generating an file list
-dlist = $(shell env find $(1) -type d -print)
-
-# Function for generating an include list
-incdirs = $(addprefix -I, $(call dlist, $(1)))
 
 # Project and Artifact Names
 #---------------------------
@@ -39,6 +33,7 @@ SRC_OBJS = $(SRC_FILES:%.$(SRC_EXT)=%.o)
 
 # Compiler and Linker Options
 #----------------------------
+CSC = csc
 CSCFLAGS = -c
 
 # Build Rules
@@ -54,7 +49,7 @@ release: $(PROJ_NAME)
 # Binaries
 $(PROJ_NAME): $(SRC_OBJS)
 	@echo Linking $@...
-	@$(CXX) -o $@ $(SRC_OBJS) $(LIBS)
+	@$(CSC) -o $@ $(SRC_OBJS) $(LIBS)
 
 # Object Files
 $(SRC_OBJS): %.o : %.$(SRC_EXT)
@@ -63,8 +58,6 @@ $(SRC_OBJS): %.o : %.$(SRC_EXT)
 
 # Cleanup
 clean:
-	@$(MAKE) -C tools/UnitTest++ clean
 	@$(RM) $(SRC_OBJS)
-	@$(RM) $(TEST_RUNNER)*
 	@$(RM) $(PROJ_NAME)*
 
