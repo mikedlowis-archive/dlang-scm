@@ -1,3 +1,4 @@
+(declare (uses buf))
 
-(print "Hello, World!")
+(print (buf (current-input-port) (lambda () '())))
 
