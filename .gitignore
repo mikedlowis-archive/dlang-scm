@@ -1,0 +1,10 @@
+build/*
+tags
+cscope.out
+*.o
+*.exe
+*.a
+*.lib
+*~
+*.d
+
