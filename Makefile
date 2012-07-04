@@ -38,7 +38,7 @@ TEST_OBJS = $(TEST_FILES:%.$(TEST_EXT)=%.o)
 # Compiler and Linker Options
 #----------------------------
 CSC = csc
-CSCFLAGS = -c -explicit-use
+CSCFLAGS = -c
 
 # Build Rules
 #------------

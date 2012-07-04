@@ -1,4 +1,7 @@
-(declare (unit buf))
+(declare (unit buf)
+         (uses library))
+
+(use vector-lib)
 
 (define-record buf
   src
@@ -49,7 +52,8 @@
 (define (buf-fill b n)
   (if (buf? b)
     (let loop ((i 0))
-      ((buf-ldfn b))
+      (buf-data-set!
+        (vector-append (buf-data b) ((buf-ldfn b))))
       (if (< i n) (loop (+ i 1))))))
 
 (define (buf-lookahead b n)
