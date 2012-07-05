@@ -1,6 +1,7 @@
 (declare
   (uses library)
-  (uses test_foo))
+  (uses test_buf)
+  (uses test))
 
-;(run-unit-tests)
+(run-all-unit-tests)
 

@@ -35,6 +35,10 @@ TEST_FILES = $(call flist, $(TEST_ROOT), $(TEST_EXT))
 SRC_OBJS = $(SRC_FILES:%.$(SRC_EXT)=%.o)
 TEST_OBJS = $(TEST_FILES:%.$(TEST_EXT)=%.o)
 
+# Include Directories
+SRC_INCS  =
+TEST_INCS = -I inc
+
 # Compiler and Linker Options
 #----------------------------
 CSC = csc
@@ -70,7 +74,7 @@ $(SRC_OBJS): %.o : %.$(SRC_EXT)
 
 $(TEST_OBJS): %.o : %.$(TEST_EXT)
 	@echo $<
-	@$(CSC) $(CSCFLAGS) -o $@ $<
+	@$(CSC) $(CSCFLAGS) $(TEST_INCS) -o $@ $<
 
 # Cleanup
 clean:
