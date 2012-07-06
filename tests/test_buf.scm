@@ -218,8 +218,8 @@
       (define buffer (buf input read-char))
       (buf-sync! buffer 3)
       (buf-pos-set! buffer 2)
-      (buf-consume! buffer)
-      (and (= 0 (buf-pos buffer))
+      (and (char=? #\c (buf-consume! buffer))
+           (= 0 (buf-pos buffer))
            (= 1 (vector-length (buf-data buffer)))))))
 
 (def-test "buf-consume! should NOT clear the buffer if pos not equal to the buffer size"
@@ -228,8 +228,8 @@
       (define buffer (buf input read-char))
       (buf-sync! buffer 3)
       (buf-pos-set! buffer 1)
-      (buf-consume! buffer)
-      (and (= 2 (buf-pos buffer))
+      (and (char=? #\b (buf-consume! buffer))
+           (= 2 (buf-pos buffer))
            (= 3 (vector-length (buf-data buffer)))))))
 
 (def-test "buf-consume! should NOT clear the buffer if the buffer is marked"
@@ -239,8 +239,8 @@
       (buf-sync! buffer 3)
       (buf-pos-set! buffer 2)
       (buf-mark! buffer)
-      (buf-consume! buffer)
-      (and (= 3 (buf-pos buffer))
+      (and (char=? #\c (buf-consume! buffer))
+           (= 3 (buf-pos buffer))
            (= 4 (vector-length (buf-data buffer)))))))
 
 

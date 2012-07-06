@@ -61,6 +61,7 @@
     (- (+ (buf-pos b) n) 1)))
 
 (define (buf-consume! b)
+  (define current (buf-lookahead! b 1))
   (buf-advance! b)
   (if
     (and
@@ -69,5 +70,6 @@
     (begin
       (buf-pos-set! b 0)
       (buf-data-set! b (vector))))
-  (buf-sync! b 1))
+  (buf-sync! b 1)
+  current)
 

@@ -36,7 +36,7 @@ SRC_OBJS = $(SRC_FILES:%.$(SRC_EXT)=%.o)
 TEST_OBJS = $(TEST_FILES:%.$(TEST_EXT)=%.o)
 
 # Include Directories
-SRC_INCS  =
+SRC_INCS  = -I inc
 TEST_INCS = -I inc
 
 # Compiler and Linker Options
@@ -70,7 +70,7 @@ $(TEST_RUNNER): $(SRC_OBJS) $(TEST_OBJS)
 # Object Files
 $(SRC_OBJS): %.o : %.$(SRC_EXT)
 	@echo $<
-	@$(CSC) $(CSCFLAGS) -o $@ $<
+	@$(CSC) $(CSCFLAGS) $(SRC_INCS) -o $@ $<
 
 $(TEST_OBJS): %.o : %.$(TEST_EXT)
 	@echo $<

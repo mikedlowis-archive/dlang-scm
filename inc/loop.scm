@@ -1,5 +1,3 @@
-(declare (unit loops))
-
 ; For loop macro
 (define-syntax for
   (syntax-rules ()
