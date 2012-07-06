@@ -36,13 +36,17 @@
 
 (define (buf-fill! b n)
   (let loop ((i 0))
-    (buf-data-set!
-      (vector-append (buf-data b) ((buf-ldfn b) (buf-src b))))
-    (if (< i n) (loop (+ i 1)))))
+    (if (< i n)
+      (begin
+        (buf-data-set! b
+          (vector-append
+            (buf-data b)
+            (vector ((buf-ldfn b) (buf-src b)))))
+        (loop (+ i 1))))))
 
 (define (buf-sync! b n)
   (let* ((pos     (buf-pos b))
-         (size    (length (buf-data)))
+         (size    (vector-length (buf-data b)))
          (nxt_idx (- (+ pos n) 1))
          (max_idx (- size 1)))
     (if (= size 0)
@@ -51,19 +55,19 @@
         (buf-fill! b (- nxt_idx max_idx))))))
 
 (define (buf-lookahead! b n)
-  (buf-sync b n)
+  (buf-sync! b n)
   (vector-ref
     (buf-data b)
     (- (+ (buf-pos b) n) 1)))
 
-(define (buf-consume! b n)
+(define (buf-consume! b)
   (buf-advance! b)
   (if
     (and
-      (= (buf-pos b) (length (buf-data b)))
+      (= (buf-pos b) (vector-length (buf-data b)))
       (not (buf-marked? b)))
     (begin
-      (buf-pos-set! 0)
-      (buf-data-set! (vector))))
-  (buf-sync! b1))
+      (buf-pos-set! b 0)
+      (buf-data-set! b (vector))))
+  (buf-sync! b 1))
 

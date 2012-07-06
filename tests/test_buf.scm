@@ -1,6 +1,7 @@
 (include "test.scm")
 (declare (unit test_buf)
          (uses buf)
+         (uses ports)
          (uses test))
 
 ; buf
@@ -122,26 +123,124 @@
 
 ; buf-fill!
 ;------------------------------------------------------------------------------
-(def-test "buf-fill! should load 0 items from the source" '())
-(def-test "buf-fill! should load 1 items from the source" '())
-(def-test "buf-fill! should load 2 items from the source" '())
-(def-test "buf-fill! should load 3 items from the source" '())
+(def-test "buf-fill! should load 0 items from the source"
+  (call-with-input-string "abcdef"
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (buf-fill! buffer 0)
+      (equal?
+        (vector)
+        (buf-data buffer)))))
+
+(def-test "buf-fill! should load 1 items from the source"
+  (call-with-input-string "abcdef"
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (buf-fill! buffer 1)
+      (equal?
+        (vector #\a)
+        (buf-data buffer)))))
+
+(def-test "buf-fill! should load 2 items from the source"
+  (call-with-input-string "abcdef"
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (buf-fill! buffer 2)
+      (equal?
+        (vector #\a #\b)
+        (buf-data buffer)))))
+
+(def-test "buf-fill! should load 3 items from the source"
+  (call-with-input-string "abcdef"
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (buf-fill! buffer 3)
+      (equal?
+        (vector #\a #\b #\c)
+        (buf-data buffer)))))
 
 ; buf-sync!
 ;------------------------------------------------------------------------------
-(def-test "buf-sync! should fill the buffer with the specified number of items when the buffer is empty" '())
-(def-test "buf-sync! should fill the buffer up to n when the buffer contains less data than required" '())
-(def-test "buf-sync! should do nothing if already synced" '())
+(def-test "buf-sync! should fill the buffer with the specified number of items when the buffer is empty"
+  (call-with-input-string "abcdef"
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (buf-sync! buffer 3)
+      (equal?
+        (vector #\a #\b #\c)
+        (buf-data buffer)))))
+
+(def-test "buf-sync! should fill the buffer up to n when the buffer contains less data than required"
+  (call-with-input-string "abcdef"
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (buf-data-set! buffer (vector #\z))
+      (buf-sync! buffer 3)
+      (equal?
+        (vector #\z #\a #\b)
+        (buf-data buffer)))))
+
+(def-test "buf-sync! should do nothing if already synced"
+  (call-with-input-string "abcdef"
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (buf-data-set! buffer (vector #\a #\b #\c))
+      (buf-sync! buffer 3)
+      (equal?
+        (vector #\a #\b #\c)
+        (buf-data buffer)))))
 
 ; buf-lookahead!
 ;------------------------------------------------------------------------------
-(def-test "buf-lookahead! should return the first item of lookahead" '())
-(def-test "buf-lookahead! should return the second item of lookahead" '())
-(def-test "buf-lookahead! should return the third item of lookahead" '())
+(def-test "buf-lookahead! should return the first item of lookahead"
+  (call-with-input-string "abcdef"
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (char=? #\a (buf-lookahead! buffer 1)))))
+
+(def-test "buf-lookahead! should return the second item of lookahead"
+  (call-with-input-string "abcdef"
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (char=? #\b (buf-lookahead! buffer 2)))))
+
+(def-test "buf-lookahead! should return the third item of lookahead"
+  (call-with-input-string "abcdef"
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (char=? #\c (buf-lookahead! buffer 3)))))
 
 ; buf-consume!
 ;------------------------------------------------------------------------------
-(def-test "buf-consume! should clear the buffer if not marked and pos is equal to the buffer size" '())
-(def-test "buf-consume! should NOT clear the buffer if pos not equal to the buffer size" '())
-(def-test "buf-consume! should NOT clear the buffer if the buffer is marked" '())
+(def-test "buf-consume! should clear the buffer if not marked and pos is equal to the buffer size"
+  (call-with-input-string "abcdef"
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (buf-sync! buffer 3)
+      (buf-pos-set! buffer 2)
+      (buf-consume! buffer)
+      (and (= 0 (buf-pos buffer))
+           (= 1 (vector-length (buf-data buffer)))))))
+
+(def-test "buf-consume! should NOT clear the buffer if pos not equal to the buffer size"
+  (call-with-input-string "abcdef"
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (buf-sync! buffer 3)
+      (buf-pos-set! buffer 1)
+      (buf-consume! buffer)
+      (and (= 2 (buf-pos buffer))
+           (= 3 (vector-length (buf-data buffer)))))))
+
+(def-test "buf-consume! should NOT clear the buffer if the buffer is marked"
+  (call-with-input-string "abcdef"
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (buf-sync! buffer 3)
+      (buf-pos-set! buffer 2)
+      (buf-mark! buffer)
+      (buf-consume! buffer)
+      (and (= 3 (buf-pos buffer))
+           (= 4 (vector-length (buf-data buffer)))))))
+
 
