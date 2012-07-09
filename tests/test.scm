@@ -19,7 +19,7 @@
       (let* ((test (car tests))
              (desc (car test))
              (fn   (cdr test)))
-        (if (not (fn))
+        (if (not (equal? #t (fn)))
           (begin
             (print "FAIL: " desc)
             (loop pass (+ fail 1) (cdr tests)))

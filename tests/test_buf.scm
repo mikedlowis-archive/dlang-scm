@@ -243,4 +243,3 @@
            (= 3 (buf-pos buffer))
            (= 4 (vector-length (buf-data buffer)))))))
 
-
