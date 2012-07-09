@@ -1,6 +1,7 @@
-(declare (unit lexer)
-         (uses buf))
 (include "loop.scm")
+(declare (unit lexer)
+         (uses parse-utils)
+         (uses buf))
 
 (define (dlang/tokenize in)
   (let ((ch (buf-lookahead! in 1)))
@@ -105,6 +106,8 @@
     (if
       (and (not (char-whitespace? ch))
            (not (eof-object? ch)))
-      (loop (string-append acc (buf-consume! in)) (buf-lookahead! in 1))
-      (token 'id acc))))
+      (loop (string-append acc (string (buf-consume! in))) (buf-lookahead! in 1))
+      (if (> (string-length acc) 0)
+        (token 'id acc)
+        (error "An Id was expected but none found.")))))
 

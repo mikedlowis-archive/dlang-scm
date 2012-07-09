@@ -6,6 +6,8 @@
 (define (register-test! test)
   (set! unit-tests (append unit-tests (list test))))
 
+(define (error msg) msg)
+
 (define (print-summary pass fail)
   (if (zero? fail)
     (print "Success: " pass " tests passed.")

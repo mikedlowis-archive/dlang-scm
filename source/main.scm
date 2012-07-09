@@ -1,4 +1,17 @@
-(declare (uses buf))
+(declare (uses buf)
+         (uses lexer)
+         (uses parser))
 
-(print (buf (current-input-port) (lambda () '())))
+(define program-parser
+  (buf
+    (buf (current-input-port) dlang/tokenize)
+    dlang/program))
+
+(define expression-parser
+  (buf
+    (buf (current-input-port) dlang/tokenize)
+    dlang/program))
+
+(print program-parser)
+(print expression-parser)
 

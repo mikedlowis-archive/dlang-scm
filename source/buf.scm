@@ -1,14 +1,10 @@
 (declare (unit buf)
          (uses library))
 
-(use vector-lib)
+(require-extension vector-lib)
 
 (define-record buf
-  src
-  ldfn
-  pos
-  marks
-  data)
+  src ldfn pos marks data)
 
 (define (buf src fn)
   (make-buf src fn 0 '() (vector)))
