@@ -96,6 +96,51 @@
 
 ; dlang/exponent
 ;------------------------------------------------------------------------------
+(def-test "dlang/exponent should recognize an exponent of length one"
+  (call-with-input-string "e0"
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (define result (dlang/exponent buffer))
+      (and (string? result)
+           (equal? "e0" result)))))
+
+(def-test "dlang/exponent should recognize an exponent of length two"
+  (call-with-input-string "e01"
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (define result (dlang/exponent buffer))
+      (and (string? result)
+           (equal? "e01" result)))))
+
+(def-test "dlang/exponent should recognize an exponent of length three"
+  (call-with-input-string "e012"
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (define result (dlang/exponent buffer))
+      (and (string? result)
+           (equal? "e012" result)))))
+
+(def-test "dlang/exponent should recognize an exponent with uppercase E"
+  (call-with-input-string "E012"
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (define result (dlang/exponent buffer))
+      (and (string? result)
+           (equal? "E012" result)))))
+
+(def-test "dlang/exponent should error when no integer portion in input"
+  (call-with-input-string "e "
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (check-error "Expected an integer"
+        (dlang/exponent buffer)))))
+
+(def-test "dlang/exponent should error when EOF"
+  (call-with-input-string ""
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (check-error "Expected 'E', received EOF instead"
+        (dlang/exponent buffer)))))
 
 ; dlang/character
 ;------------------------------------------------------------------------------

@@ -79,9 +79,10 @@
 (define (dlang/exponent in)
   (string-append
     ;(string (char-match-one-of in '(#\e #\E)))
-    (if (char=? (buf-lookahead! in 1) #\e)
-      (match in #\e) (match in #\E))
-    (dlang/integer in "")))
+    (string
+      (if (char=? (buf-lookahead! in 1) #\e)
+        (char-match in #\e) (char-match in #\E)))
+    (dlang/integer in)))
 
 (define (dlang/character in)
   (token 'character
