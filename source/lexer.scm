@@ -51,9 +51,10 @@
     (buf-consume! in)))
 
 (define (dlang/number in)
-  (lex/token 'number
+  (token 'number
     (string-append
-      (if (char=? #\- (buf-lookahead! in 1)) (buf-consume! in) "")
+      (if (char=? #\- (buf-lookahead! in 1))
+        (string (buf-consume! in)) "")
       (dlang/integer in)
       (if (char=? (buf-lookahead! in 1) #\.)
         (dlang/decimal in) "")
@@ -82,6 +83,8 @@
     (string
       (if (char=? (buf-lookahead! in 1) #\e)
         (char-match in #\e) (char-match in #\E)))
+    (if (char=? #\- (buf-lookahead! in 1))
+      (string (buf-consume! in)) "")
     (dlang/integer in)))
 
 (define (dlang/character in)

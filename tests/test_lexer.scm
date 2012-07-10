@@ -7,12 +7,137 @@
 
 ; dlang/whitespace
 ;------------------------------------------------------------------------------
+(def-test "dlang/whitespace should recognize and consume whitespace"
+  (call-with-input-string " \t\r\na"
+    (lambda (input) '())))
 
 ; dlang/comment
 ;------------------------------------------------------------------------------
+(def-test "dlang/comment should recognize comments with windows style line endings"
+  (call-with-input-string "# foo\r\n"
+    (lambda (input) '())))
+
+(def-test "dlang/comment should recognize comments with unix style line endings"
+  (call-with-input-string "# foo\n"
+    (lambda (input) '())))
+
+(def-test "dlang/comment should recognize an empty comment"
+  (call-with-input-string "#\n"
+    (lambda (input) '())))
+
+(def-test "dlang/comment should recognize comment at EOF"
+  (call-with-input-string "#"
+    (lambda (input) '())))
 
 ; dlang/number
 ;------------------------------------------------------------------------------
+(def-test "dlang/number should recognize a positive integer"
+  (call-with-input-string "1"
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (define result (dlang/number buffer))
+      (and (token? result)
+           (equal? 'number (token-type result))
+           (equal? "1" (token-text result))))))
+
+(def-test "dlang/number should recognize a negative integer"
+  (call-with-input-string "-1"
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (define result (dlang/number buffer))
+      (and (token? result)
+           (equal? 'number (token-type result))
+           (equal? "-1" (token-text result))))))
+
+(def-test "dlang/number should recognize a positive float"
+  (call-with-input-string "1.1"
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (define result (dlang/number buffer))
+      (and (token? result)
+           (equal? 'number (token-type result))
+           (equal? "1.1" (token-text result))))))
+
+(def-test "dlang/number should recognize a negative float"
+  (call-with-input-string "-1.1"
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (define result (dlang/number buffer))
+      (and (token? result)
+           (equal? 'number (token-type result))
+           (equal? "-1.1" (token-text result))))))
+
+(def-test "dlang/number should recognize a positive integer with positive exponent"
+  (call-with-input-string "1e1"
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (define result (dlang/number buffer))
+      (and (token? result)
+           (equal? 'number (token-type result))
+           (equal? "1e1" (token-text result))))))
+
+(def-test "dlang/number should recognize a positive integer with negative exponent"
+  (call-with-input-string "1e-1"
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (define result (dlang/number buffer))
+      (and (token? result)
+           (equal? 'number (token-type result))
+           (equal? "1e-1" (token-text result))))))
+
+(def-test "dlang/number should recognize a positive float with positive exponent"
+  (call-with-input-string "1.1e1"
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (define result (dlang/number buffer))
+      (and (token? result)
+           (equal? 'number (token-type result))
+           (equal? "1.1e1" (token-text result))))))
+
+(def-test "dlang/number should recognize a positive float with negative exponent"
+  (call-with-input-string "1.1e-1"
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (define result (dlang/number buffer))
+      (and (token? result)
+           (equal? 'number (token-type result))
+           (equal? "1.1e-1" (token-text result))))))
+
+(def-test "dlang/number should recognize a negative integer with positive exponent"
+  (call-with-input-string "-1e1"
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (define result (dlang/number buffer))
+      (and (token? result)
+           (equal? 'number (token-type result))
+           (equal? "-1e1" (token-text result))))))
+
+(def-test "dlang/number should recognize a negative integer with negative exponent"
+  (call-with-input-string "-1e-1"
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (define result (dlang/number buffer))
+      (and (token? result)
+           (equal? 'number (token-type result))
+           (equal? "-1e-1" (token-text result))))))
+
+(def-test "dlang/number should recognize a negative float with positive exponent"
+  (call-with-input-string "-1.1e1"
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (define result (dlang/number buffer))
+      (and (token? result)
+           (equal? 'number (token-type result))
+           (equal? "-1.1e1" (token-text result))))))
+
+(def-test "dlang/number should recognize a negative float with negative exponent"
+  (call-with-input-string "-1.1e-1"
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (define result (dlang/number buffer))
+      (and (token? result)
+           (equal? 'number (token-type result))
+           (equal? "-1.1e-1" (token-text result))))))
 
 ; dlang/integer
 ;------------------------------------------------------------------------------
@@ -127,6 +252,14 @@
       (define result (dlang/exponent buffer))
       (and (string? result)
            (equal? "E012" result)))))
+
+(def-test "dlang/exponent should recognize a negative exponent"
+  (call-with-input-string "e-012"
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (define result (dlang/exponent buffer))
+      (and (string? result)
+           (equal? "e-012" result)))))
 
 (def-test "dlang/exponent should error when no integer portion in input"
   (call-with-input-string "e "
@@ -262,4 +395,10 @@
       (define buffer (buf input read-char))
       (check-error "An Id was expected but none found."
         (dlang/id buffer)))))
+
+(def-test "dlang/stop recognition when comment encountered"
+  (call-with-input-string "foo#"
+    (lambda (input) '())))
+
+
 
