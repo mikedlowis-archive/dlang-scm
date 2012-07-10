@@ -400,5 +400,3 @@
   (call-with-input-string "foo#"
     (lambda (input) '())))
 
-
-
