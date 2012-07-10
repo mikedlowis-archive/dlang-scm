@@ -63,10 +63,12 @@
 
 (define (dlang/integer in)
   (define text "")
-  (if (char-numeric? (buf-lookahead! in 1))
+  (if (and
+        (not (eof-object? (buf-lookahead! in 1)))
+        (char-numeric? (buf-lookahead! in 1)))
     (while (char-numeric? (buf-lookahead! in 1))
       (set! text (string-append text (string (buf-consume! in)))))
-    (error "Expected a number."))
+    (error "Expected an integer"))
   text)
 
 (define (dlang/decimal in)
@@ -80,24 +82,24 @@
       (match in #\e) (match in #\E))
     (dlang/integer in "")))
 
-(define (dlang/character in str)
+(define (dlang/character in)
   (token 'character
     (string-append
       (string (match in #\'))
       (string (buf-consume! in))
       (string (match in #\')) )))
 
-(define (dlang/string in str)
+(define (dlang/string in)
   (token 'string
     (string-append
       (string (match in #\"))
       (accumulate-till in string-append "" #\")
       (string (match in #\")) )))
 
-(define (dlang/symbol in str)
+(define (dlang/symbol in)
   (token 'symbol
     (string-append
-      (match in #\$)
+      (string (char-match in #\$))
       (token-text (dlang/id in)))))
 
 (define (dlang/id in)

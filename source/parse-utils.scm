@@ -8,11 +8,13 @@
 
 (define (char-match buf expect)
   (define actual (buf-lookahead! buf 1))
-  (if (equal? expect actual)
-    (buf-consume! buf)
-    (error
-      (string-append
-        "Expected '" expect "', received '" actual "' instead.")))
+  (if (eof-object? actual)
+    (error (string-append "Expected '" (string expect) "', received EOF instead"))
+    (if (equal? expect actual)
+      (buf-consume! buf)
+      (error
+        (string-append
+          "Expected '" (string expect) "', received '" (string actual) "' instead"))))
   actual)
 
 (define (token-match buf expect)
@@ -21,6 +23,6 @@
     (buf-consume! buf)
     (error
       (string-append
-        "Expected a " expect ", received a " actual " instead.")))
+        "Expected a " expect ", received a " actual " instead")))
   actual)
 

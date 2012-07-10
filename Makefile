@@ -37,7 +37,7 @@ TEST_OBJS = $(TEST_FILES:%.$(TEST_EXT)=%.o)
 
 # Include Directories
 SRC_INCS  = -I inc
-TEST_INCS = -I inc
+TEST_INCS = -I inc -w
 
 # Compiler and Linker Options
 #----------------------------
