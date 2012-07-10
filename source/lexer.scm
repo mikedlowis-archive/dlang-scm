@@ -73,11 +73,12 @@
 
 (define (dlang/decimal in)
   (string-append
-    (match in #\.)
-    (dlang/digits in "")))
+    (string (char-match in #\.))
+    (dlang/integer in)))
 
 (define (dlang/exponent in)
   (string-append
+    ;(string (char-match-one-of in '(#\e #\E)))
     (if (char=? (buf-lookahead! in 1) #\e)
       (match in #\e) (match in #\E))
     (dlang/integer in "")))

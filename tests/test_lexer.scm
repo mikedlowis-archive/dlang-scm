@@ -48,7 +48,7 @@
         (dlang/integer buffer)))))
 
 (def-test "dlang/integer should error when EOF"
-  (call-with-input-string "abc"
+  (call-with-input-string ""
     (lambda (input)
       (define buffer (buf input read-char))
       (check-error "Expected an integer"
@@ -56,6 +56,43 @@
 
 ; dlang/decimal
 ;------------------------------------------------------------------------------
+(def-test "dlang/decimal should recognize an decimal of length one"
+  (call-with-input-string ".0"
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (define result (dlang/decimal buffer))
+      (and (string? result)
+           (equal? ".0" result)))))
+
+(def-test "dlang/decimal should recognize an decimal of length two"
+  (call-with-input-string ".01"
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (define result (dlang/decimal buffer))
+      (and (string? result)
+           (equal? ".01" result)))))
+
+(def-test "dlang/decimal should recognize an decimal of length three"
+  (call-with-input-string ".012"
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (define result (dlang/decimal buffer))
+      (and (string? result)
+           (equal? ".012" result)))))
+
+(def-test "dlang/decimal should error when no integer portion in input"
+  (call-with-input-string ". "
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (check-error "Expected an integer"
+        (dlang/decimal buffer)))))
+
+(def-test "dlang/decimal should error when EOF"
+  (call-with-input-string ""
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (check-error "Expected '.', received EOF instead"
+        (dlang/decimal buffer)))))
 
 ; dlang/exponent
 ;------------------------------------------------------------------------------
