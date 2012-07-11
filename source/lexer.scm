@@ -112,14 +112,14 @@
       (token-text (dlang/id in)))))
 
 (define (dlang/id in)
-  (let loop ((acc "")
-             (ch  (buf-lookahead! in 1)))
-    (if
-      (and (not (char-whitespace? ch))
+  (define acc "")
+  (define ch (buf-lookahead! in 1))
+  (while (and (not (char-whitespace? ch))
            (not (eof-object? ch))
            (not (char=? ch #\#)))
-      (loop (string-append acc (string (buf-consume! in))) (buf-lookahead! in 1))
-      (if (> (string-length acc) 0)
-        (token 'id acc)
-        (error "An Id was expected but none found.")))))
+    (set! acc (string-append acc (string (buf-consume! in))))
+    (set! ch (buf-lookahead! in 1)))
+  (if (> (string-length acc) 0)
+    (token 'id acc)
+    (error "An Id was expected but none found.")))
 
