@@ -83,7 +83,7 @@
 
 (define (dlang/exponent in)
   (string-append
-    ;(string (char-match-one-of in '(#\e #\E)))
+    ;(string (char-match-one-of in "eE"))
     (string
       (if (char=? (buf-lookahead! in 1) #\e)
         (char-match in #\e) (char-match in #\E)))
@@ -95,15 +95,19 @@
   (token 'character
     (string-append
       (string (char-match in #\'))
-      (string (buf-consume! in))
+      (if (eof-object? (buf-lookahead! in 1))
+        (error "Unexpected EOF while parsing character literal")
+        (string (buf-consume! in)))
       (string (char-match in #\')) )))
 
 (define (dlang/string in)
-  (token 'string
-    (string-append
-      (string (char-match in #\"))
-      ;(accumulate-till in string-append "" #\")
-      (string (char-match in #\")) )))
+  (define text (string (char-match in #\")))
+  (while (and (not (eof-object? (buf-lookahead! in 1)))
+              (not (char=? #\newline (buf-lookahead! in 1)))
+              (not (char=? #\" (buf-lookahead! in 1))))
+    (set! text (string-append text (string (buf-consume! in)))))
+  (set! text (string-append text (string (char-match in #\"))))
+  (token 'string text))
 
 (define (dlang/symbol in)
   (token 'symbol

@@ -385,9 +385,94 @@
 
 ; dlang/character
 ;------------------------------------------------------------------------------
+(def-test "dlang/character should recognize a character"
+  (call-with-input-string "'a'"
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (define result (dlang/character buffer))
+      (and (token? result)
+           (equal? 'character (token-type result))
+           (equal? "'a'" (token-text result))))))
+
+(def-test "dlang/character should error when missing first single quote"
+  (call-with-input-string "a'"
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (check-error "Expected ''', received 'a' instead"
+        (dlang/character buffer)))))
+
+(def-test "dlang/character should error when missing second single quote"
+  (call-with-input-string "'a"
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (check-error "Expected ''', received EOF instead"
+        (dlang/character buffer)))))
+
+(def-test "dlang/character should error when EOF reached"
+  (call-with-input-string "'"
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (check-error "Unexpected EOF while parsing character literal"
+        (dlang/character buffer)))))
 
 ; dlang/string
 ;------------------------------------------------------------------------------
+(def-test "dlang/string should recognize an empty string"
+  (call-with-input-string "\"\""
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (define result (dlang/string buffer))
+      (and (token? result)
+           (equal? 'string (token-type result))
+           (equal? "\"\"" (token-text result))))))
+
+(def-test "dlang/string should recognize a string of length 1"
+  (call-with-input-string "\"a\""
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (define result (dlang/string buffer))
+      (and (token? result)
+           (equal? 'string (token-type result))
+           (equal? "\"a\"" (token-text result))))))
+
+(def-test "dlang/string should recognize a string of length 2"
+  (call-with-input-string "\"ab\""
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (define result (dlang/string buffer))
+      (and (token? result)
+           (equal? 'string (token-type result))
+           (equal? "\"ab\"" (token-text result))))))
+
+(def-test "dlang/string should recognize a string of length 3"
+  (call-with-input-string "\"abc\""
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (define result (dlang/string buffer))
+      (and (token? result)
+           (equal? 'string (token-type result))
+           (equal? "\"abc\"" (token-text result))))))
+
+(def-test "dlang/string should error when missing first double quote"
+  (call-with-input-string "a\""
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (check-error "Expected '\"', received 'a' instead"
+        (dlang/string buffer)))))
+
+(def-test "dlang/string should error when missing second double quote"
+  (call-with-input-string "\"a"
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (check-error "Expected '\"', received EOF instead"
+        (dlang/string buffer)))))
+
+(def-test "dlang/string should error when EOF reached"
+  (call-with-input-string "\""
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (check-error "Expected '\"', received EOF instead"
+        (dlang/string buffer)))))
 
 ; dlang/symbol
 ;------------------------------------------------------------------------------
