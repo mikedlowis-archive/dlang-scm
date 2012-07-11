@@ -6,15 +6,16 @@
 (define (dlang/tokenize in)
   (let ((ch (buf-lookahead! in 1)))
     (cond
+      ; End of Input reached
+      ((eof-object? ch) ch)
+
       ; Whitespace
       ((char-whitespace? ch)
-       (dlang/whitespace in)
-       (dlang/tokenize in))
+       (dlang/whitespace in))
 
       ; Comment
       ((char=? ch #\#)
-       (dlang/comment in)
-       (dlang/tokenize in))
+       (dlang/comment in))
 
       ; Number
       ((or
@@ -23,13 +24,13 @@
        (dlang/number in))
 
       ; Character
-      ((char=? ch #\') (dlang/character in ""))
+      ((char=? ch #\') (dlang/character in))
 
       ; String
-      ((char=? ch #\") (dlang/string in ""))
+      ((char=? ch #\") (dlang/string in))
 
       ; Symbol
-      ((char=? ch #\$) (dlang/symbol in ""))
+      ((char=? ch #\$) (dlang/symbol in))
 
       ; Parentheses
       ((char=? ch #\()
@@ -43,12 +44,15 @@
 
 (define (dlang/whitespace in)
   (while (char-whitespace? (buf-lookahead! in 1))
-    (buf-consume! in)))
+    (buf-consume! in))
+  (dlang/tokenize in))
 
 (define (dlang/comment in)
-  (match in #\#)
-  (while (not (char=? (buf-lookahead! in) #\newline))
-    (buf-consume! in)))
+  (char-match in #\#)
+  (while (and (not (char=? (buf-lookahead! in 1) #\newline))
+              (not (eof-object? (buf-lookahead! in 1))))
+    (buf-consume! in))
+  (dlang/tokenize in))
 
 (define (dlang/number in)
   (token 'number
@@ -90,16 +94,16 @@
 (define (dlang/character in)
   (token 'character
     (string-append
-      (string (match in #\'))
+      (string (char-match in #\'))
       (string (buf-consume! in))
-      (string (match in #\')) )))
+      (string (char-match in #\')) )))
 
 (define (dlang/string in)
   (token 'string
     (string-append
-      (string (match in #\"))
-      (accumulate-till in string-append "" #\")
-      (string (match in #\")) )))
+      (string (char-match in #\"))
+      ;(accumulate-till in string-append "" #\")
+      (string (char-match in #\")) )))
 
 (define (dlang/symbol in)
   (token 'symbol
@@ -112,7 +116,8 @@
              (ch  (buf-lookahead! in 1)))
     (if
       (and (not (char-whitespace? ch))
-           (not (eof-object? ch)))
+           (not (eof-object? ch))
+           (not (char=? ch #\#)))
       (loop (string-append acc (string (buf-consume! in))) (buf-lookahead! in 1))
       (if (> (string-length acc) 0)
         (token 'id acc)

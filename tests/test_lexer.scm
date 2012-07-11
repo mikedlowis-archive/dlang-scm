@@ -4,30 +4,138 @@
 
 ; dlang/tokenize
 ;------------------------------------------------------------------------------
+(def-test "dlang/tokenize should recognize whitespace"
+  (call-with-input-string " \t\r\n"
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (eof-object? (dlang/tokenize buffer)))))
+
+(def-test "dlang/tokenize should recognize a comment"
+  (call-with-input-string "# foo"
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (eof-object? (dlang/tokenize buffer)))))
+
+(def-test "dlang/tokenize should recognize a number"
+  (call-with-input-string "12"
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (define result (dlang/tokenize buffer))
+      (and (token? result)
+           (equal? 'number (token-type result))
+           (equal? "12" (token-text result))))))
+
+(def-test "dlang/tokenize should recognize a character"
+  (call-with-input-string "'a'"
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (define result (dlang/tokenize buffer))
+      (and (token? result)
+           (equal? 'character (token-type result))
+           (equal? "'a'" (token-text result))))))
+
+(def-test "dlang/tokenize should recognize a string"
+  (call-with-input-string "\"\""
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (define result (dlang/tokenize buffer))
+      (and (token? result)
+           (equal? 'string (token-type result))
+           (equal? "\"\"" (token-text result))))))
+
+(def-test "dlang/tokenize should recognize a symbol"
+  (call-with-input-string "$foobar"
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (define result (dlang/tokenize buffer))
+      (and (token? result)
+           (equal? 'symbol (token-type result))
+           (equal? "$foobar" (token-text result))))))
+
+(def-test "dlang/tokenize should recognize an id"
+  (call-with-input-string "foobar"
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (define result (dlang/tokenize buffer))
+      (and (token? result)
+           (equal? 'id (token-type result))
+           (equal? "foobar" (token-text result))))))
+
+(def-test "dlang/tokenize should recognize the EOF"
+  (call-with-input-string ""
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (eof-object? (dlang/tokenize buffer)))))
+
+(def-test "dlang/tokenize should recognize a left parenthese"
+  (call-with-input-string "("
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (define result (dlang/tokenize buffer))
+      (and (token? result)
+           (equal? 'lpar (token-type result))
+           (equal? "(" (token-text result))))))
+
+(def-test "dlang/tokenize should recognize a right parenthese"
+  (call-with-input-string ")"
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (define result (dlang/tokenize buffer))
+      (and (token? result)
+           (equal? 'rpar (token-type result))
+           (equal? ")" (token-text result))))))
 
 ; dlang/whitespace
 ;------------------------------------------------------------------------------
 (def-test "dlang/whitespace should recognize and consume whitespace"
-  (call-with-input-string " \t\r\na"
-    (lambda (input) '())))
+  (call-with-input-string " \t\r\n"
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (eof-object? (dlang/whitespace buffer)))))
+
+(def-test "dlang/whitespace continue parsing after whitespace"
+  (call-with-input-string " \t\r\nfoo"
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (define result (dlang/whitespace buffer))
+      (and (token? result)
+           (equal? 'id (token-type result))
+           (equal? "foo" (token-text result))))))
 
 ; dlang/comment
 ;------------------------------------------------------------------------------
 (def-test "dlang/comment should recognize comments with windows style line endings"
   (call-with-input-string "# foo\r\n"
-    (lambda (input) '())))
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (eof-object? (dlang/comment buffer)))))
 
 (def-test "dlang/comment should recognize comments with unix style line endings"
   (call-with-input-string "# foo\n"
-    (lambda (input) '())))
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (eof-object? (dlang/comment buffer)))))
 
 (def-test "dlang/comment should recognize an empty comment"
   (call-with-input-string "#\n"
-    (lambda (input) '())))
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (eof-object? (dlang/comment buffer)))))
 
 (def-test "dlang/comment should recognize comment at EOF"
   (call-with-input-string "#"
-    (lambda (input) '())))
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (eof-object? (dlang/comment buffer)))))
+
+(def-test "dlang/comment should continue parsing after a comment"
+  (call-with-input-string "# foo\r\nbar"
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (define result (dlang/comment buffer))
+      (and (token? result)
+           (equal? 'id (token-type result))
+           (equal? "bar" (token-text result))))))
 
 ; dlang/number
 ;------------------------------------------------------------------------------
@@ -396,7 +504,12 @@
       (check-error "An Id was expected but none found."
         (dlang/id buffer)))))
 
-(def-test "dlang/stop recognition when comment encountered"
+(def-test "dlang/id should stop recognition when comment encountered"
   (call-with-input-string "foo#"
-    (lambda (input) '())))
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (define result (dlang/id buffer))
+      (and (token? result)
+           (equal? 'id (token-type result))
+           (equal? "foo" (token-text result))))))
 

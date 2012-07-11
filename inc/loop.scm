@@ -11,9 +11,10 @@
 (define-syntax while
   (syntax-rules ()
     ((_ cnd body ...)
-      (let loop ()
-        body ...
-        (if cnd (loop))))))
+      (if cnd
+        (let loop ()
+          body ...
+          (if cnd (loop)))))))
 
 ; Until loop macro
 (define-syntax until
