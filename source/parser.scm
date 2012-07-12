@@ -9,12 +9,11 @@
 ; Expression := CoreForm
 ;             | BasicExpr
 ;             | BasicExpr ArgList
-; CoreForm
 ;
-; BasicExpr := '(' Expression Operator Expression ')'
+; CoreForm :=
+;
+; BasicExpr := '(' Expression ID Expression ')'
 ;            | Literal
-;
-; Operator
 ;
 ; Literal := ID | CHAR | STRING | SYMBOL | NUMBER
 ;
