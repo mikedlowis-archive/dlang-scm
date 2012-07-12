@@ -1,0 +1,80 @@
+# Literals
+"foo"
+'a'
+1.0
+$foo
+
+# Infix operator expression
+(1 add 1)
+((1 add 1) add 1)
+(1 add (1 add 1))
+(1 - (1 + 1))
+
+# Function Application
+foo()
+foo(1)
+foo(1, 2)
+foo(1, 2, 3)
+(foo . $bar)(1, 2, 3)
+
+# Definition and assignment
+def foo 5 ;
+set foo 6 ;
+def foo 5 end
+set foo 6 end
+
+# Special function definition shorthand
+def max(a, b) if (a > b) a else b ;;
+
+# If statement
+if conditional
+    if_branch
+#else
+    else_branch
+end
+
+if conditional if_branch ;
+
+# Begin block
+begin ;
+begin foo() ;
+
+begin
+    foo()
+    bar()
+end
+
+# Lambda expressions
+func () ;
+func (a) ;
+func (a, b) ;
+func (a, b, c) ;
+func () foo(a) ;
+func (a) foo(a) ;
+func (a, b) foo(a, b) ;
+func (a, b, c) foo(a, b, c) ;
+
+# Macro expressions
+macro () ;
+macro (a) ;
+macro (a, b) ;
+macro (a, b, c) ;
+macro () foo(a) ;
+macro (a) foo(a) ;
+macro (a, b) foo(a, b) ;
+macro (a, b, c) foo(a, b, c) ;
+
+# Quoting Expressions
+#quote( (1 + 1) )
+
+# Syntactic Extensions
+#syntax let ( := = ) ;
+#    ( a := b )
+#        define a b ;
+#
+#    ( a = b )
+#        set! a b ;
+#end
+
+#let foo := "bar" ;
+#let foo = 5 ;
