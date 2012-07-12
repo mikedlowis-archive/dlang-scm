@@ -1,5 +1,7 @@
 (declare (unit parser)
          (uses buf))
+
+;------------------------------------------------------------------------------
 ; Formal EBNF Syntax:
 ;
 ; Program := Expression*
@@ -17,6 +19,7 @@
 ; Literal := ID | CHAR | STRING | SYMBOL | NUMBER
 ;
 ; ArgList := '(' Expression (',' Expression)* ')'
+;------------------------------------------------------------------------------
 
 (define (dlang/program in)
   (define result '())
