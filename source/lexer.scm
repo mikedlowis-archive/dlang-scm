@@ -8,42 +8,51 @@
 
 (define (dlang/tokenize in)
   (let ((ch (buf-lookahead! in 1)))
-    (cond
-      ; End of Input reached
-      ((eof-object? ch) ch)
+    (define tok
+      (cond
+        ; End of Input reached
+        ((eof-object? ch) ch)
 
-      ; Whitespace
-      ((char-whitespace? ch)
-       (dlang/whitespace in))
+        ; Whitespace
+        ((char-whitespace? ch)
+         (dlang/whitespace in))
 
-      ; Comment
-      ((char=? ch #\#)
-       (dlang/comment in))
+        ; Comment
+        ((char=? ch #\#)
+         (dlang/comment in))
 
-      ; Number
-      ((or
-         (and (char=? ch #\-) (char-numeric? (buf-lookahead! in 2)))
-         (char-numeric? ch))
-       (dlang/number in))
+        ; Number
+        ((or
+           (and (char=? ch #\-) (char-numeric? (buf-lookahead! in 2)))
+           (char-numeric? ch))
+         (dlang/number in))
 
-      ; Character
-      ((char=? ch #\') (dlang/character in))
+        ; Character
+        ((char=? ch #\') (dlang/character in))
 
-      ; String
-      ((char=? ch #\") (dlang/string in))
+        ; String
+        ((char=? ch #\") (dlang/string in))
 
-      ; Symbol
-      ((char=? ch #\$) (dlang/symbol in))
+        ; Symbol
+        ((char=? ch #\$) (dlang/symbol in))
 
-      ; Parentheses
-      ((char=? ch #\()
-       (token 'lpar (string (buf-consume! in))))
-      ((char=? ch #\))
-       (token 'rpar (string (buf-consume! in))))
+        ; Punctuation and Parens
+        ((char=? ch #\()
+         (token 'lpar (string (buf-consume! in))))
+        ((char=? ch #\))
+         (token 'rpar (string (buf-consume! in))))
+        ((char=? ch #\,)
+         (token 'comma (string (buf-consume! in))))
+        ((char=? ch #\;)
+         (token 'term (string (buf-consume! in))))
 
-      ; Id
-      (else
-        (dlang/id in)))))
+        ; Id
+        (else
+          (dlang/id in))))
+    (if (and (not (eof-object? tok))
+             (equal? "end" (token-text tok)))
+      (token-type-set! tok 'term))
+    tok))
 
 (define (dlang/whitespace in)
   (while (char-whitespace? (buf-lookahead! in 1))

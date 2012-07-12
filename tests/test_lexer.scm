@@ -115,6 +115,33 @@
            (equal? 'rpar (token-type result))
            (equal? ")" (token-text result))))))
 
+(def-test "dlang/tokenize should recognize a comma"
+  (call-with-input-string ","
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (define result (dlang/tokenize buffer))
+      (and (token? result)
+           (equal? 'comma (token-type result))
+           (equal? "," (token-text result))))))
+
+(def-test "dlang/tokenize should recognize a semicolon"
+  (call-with-input-string ";"
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (define result (dlang/tokenize buffer))
+      (and (token? result)
+           (equal? 'term (token-type result))
+           (equal? ";" (token-text result))))))
+
+(def-test "dlang/tokenize should recognize the end keyword"
+  (call-with-input-string "end"
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (define result (dlang/tokenize buffer))
+      (and (token? result)
+           (equal? 'term (token-type result))
+           (equal? "end" (token-text result))))))
+
 ; dlang/whitespace
 ;------------------------------------------------------------------------------
 (def-test "dlang/whitespace should recognize and consume whitespace"
