@@ -3,6 +3,9 @@
          (uses parse-utils)
          (uses buf))
 
+(define (dlang/lexer input)
+  (buf (buf input read-char) dlang/tokenize))
+
 (define (dlang/tokenize in)
   (let ((ch (buf-lookahead! in 1)))
     (cond

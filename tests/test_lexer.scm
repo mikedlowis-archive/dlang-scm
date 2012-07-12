@@ -2,6 +2,36 @@
 (declare (unit test_lexer)
          (uses lexer))
 
+; dlang/lexer
+;------------------------------------------------------------------------------
+(def-test "dlang/lexer should create a new lexer from the given port"
+  (call-with-input-string "abc"
+    (lambda (input)
+      (define buffer (dlang/lexer input))
+      (and (buf? buffer)
+           (buf? (buf-src buffer))
+           (token? (buf-lookahead! buffer 1))))))
+
+(def-test "dlang/lexer should create a capable of returning a sequence of tokens"
+  (call-with-input-string "abc 123 $foo"
+    (lambda (input)
+      (define buffer (dlang/lexer input))
+      (and (buf? buffer)
+           (buf? (buf-src buffer))
+           (token? (buf-lookahead! buffer 1))
+           (token? (buf-lookahead! buffer 2))
+           (token? (buf-lookahead! buffer 3))))))
+
+(def-test "dlang/lexer should create a lexer that returns the #!eof when EOF reached"
+  (call-with-input-string "abc"
+    (lambda (input)
+      (define buffer (dlang/lexer input))
+      (and (buf? buffer)
+           (buf? (buf-src buffer))
+           (token? (buf-lookahead! buffer 1))
+           (eof-object? (buf-lookahead! buffer 2))
+           (eof-object? (buf-lookahead! buffer 3))))))
+
 ; dlang/tokenize
 ;------------------------------------------------------------------------------
 (def-test "dlang/tokenize should recognize whitespace"
