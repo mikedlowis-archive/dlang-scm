@@ -1,5 +1,22 @@
 (declare (unit parser)
          (uses buf))
+; Formal EBNF Syntax:
+;
+; Program := Expression*
+;
+; Expression := CoreForm
+;             | BasicExpr
+;             | BasicExpr ArgList
+; CoreForm
+;
+; BasicExpr := '(' Expression Operator Expression ')'
+;            | Literal
+;
+; Operator
+;
+; Literal := ID | CHAR | STRING | SYMBOL | NUMBER
+;
+; ArgList := '(' Expression (',' Expression)* ')'
 
 (define (dlang/program in)
   (define result '())
@@ -21,7 +38,8 @@
 (define (dlang/core-form in) '())
 
 (define (dlang/basic-expr in)
-  (if (buf-lookahead! in 1)
+  (define tok (buf-lookahead! in 1))
+  (if (equal? 'lpar (token-type tok))
     (dlang/operator-app in)
     (dlang/literal in)))
 
