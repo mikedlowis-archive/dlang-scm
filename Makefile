@@ -37,12 +37,12 @@ TEST_OBJS = $(TEST_FILES:%.$(TEST_EXT)=%.o)
 
 # Include Directories
 SRC_INCS  = -I inc
-TEST_INCS = -I inc -w
+TEST_INCS = -I inc
 
 # Compiler and Linker Options
 #----------------------------
 CSC = csc
-CSCFLAGS = -c
+CSCFLAGS = -c -w
 
 # Build Rules
 #------------
