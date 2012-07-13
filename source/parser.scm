@@ -28,6 +28,8 @@
 ; ExpBlock := Expression*
 ;------------------------------------------------------------------------------
 
+(define (core-form? in) #f)
+
 (define (dlang/program in)
   (define result '())
   (while (not (eof-object? (buf-lookahead! in 1)))
@@ -66,18 +68,17 @@
     tree))
 
 (define (dlang/operator in)
-  (define tok (buf-lookahead! in 1))
-  (if (equal? 'id (token-type tok))
-    (syntree (token-type tok) (token-text tok) '())
-    (error "Expected an Id or operator.")))
+  (define tok (token-match in 'id))
+  (syntree (token-type tok) (token-text tok) '()))
 
 (define (dlang/literal in)
   (define tok (buf-lookahead! in 1))
-  (if (or (equal? 'id tok)
-          (equal? 'character tok)
-          (equal? 'string tok)
-          (equal? 'symbol tok)
-          (equal? 'number tok))
+  (define type (if (eof-object? tok) '() (token-type tok)))
+  (if (or (equal? 'id type)
+          (equal? 'character type)
+          (equal? 'string type)
+          (equal? 'symbol type)
+          (equal? 'number type))
     (set! tok (buf-consume! in))
     (error "Expected a literal"))
   (syntree (token-type tok) (token-text tok) '()))
