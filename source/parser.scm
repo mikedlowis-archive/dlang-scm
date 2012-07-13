@@ -10,7 +10,11 @@
 ;             | BasicExpr
 ;             | BasicExpr ArgList
 ;
-; CoreForm :=
+; CoreForm := 'def' ID Expression TERM
+;           | 'set!' ID Expression TERM
+;           | 'if' Expression Expression Expression TERM
+;           | 'begin' ExpBlock TERM
+;           | 'func' IdList ExpBlock TERM
 ;
 ; BasicExpr := '(' Expression ID Expression ')'
 ;            | Literal
@@ -18,6 +22,10 @@
 ; Literal := ID | CHAR | STRING | SYMBOL | NUMBER
 ;
 ; ArgList := '(' Expression (',' Expression)* ')'
+;
+; IdList := '(' ID (',' ID)* ')'
+;
+; ExpBlock := Expression*
 ;------------------------------------------------------------------------------
 
 (define (dlang/program in)
@@ -27,13 +35,13 @@
 
 (define (dlang/expression in)
   (if (core-form? in)
-    (core-from in)
-    (let ((result (basic-expr in))
+    (core-form in)
+    (let ((result (dlang/basic-expr in))
           (ret    '()))
       (if (equal? 'lpar (buf-lookahead! in 1))
         (begin
           (match in 'lpar)
-          (set! ret (expr-list in))
+          (set! ret (dlang/expr-list in))
           (match in 'rpar)))
       ret)))
 
@@ -46,16 +54,16 @@
     (dlang/literal in)))
 
 (define (dlang/operator-app in)
-  (define tree (syntree 'apply "" '()))
-  (define parts '())
-  (define op '())
-  (token-match in 'lpar)
-  (set! parts (cons (dlang/expression in)))
-  (set! parts (cons (dlang/operator in)))
-  (set! parts (append parts (list (dlang/expression in))))
-  (token-match in 'rpar)
-  (syntree-children-set! tree parts)
-  tree)
+  (let ((tree (syntree 'apply "" '()))
+        (parts '())
+        (op '()))
+    (token-match in 'lpar)
+    (set! parts (cons (dlang/expression in)))
+    (set! parts (cons (dlang/operator in)))
+    (set! parts (append parts (list (dlang/expression in))))
+    (token-match in 'rpar)
+    (syntree-children-set! tree parts)
+    tree))
 
 (define (dlang/operator in)
   (define tok (buf-lookahead! in 1))
@@ -74,13 +82,7 @@
     (error "Expected a literal"))
   (syntree (token-type tok) (token-text tok) '()))
 
-(define (dlang/expr-list in term)
-  (define tree (syntree 'list "" '()))
-  (define chldrn '())
-  (while (equal? term (token-type (buf-lookahead! in 1)))
-    (set! chldrn (append chldrn (list (dlang/expression in)))))
-  (syntree-children-set! tree chldrn)
-  tree)
+(define (dlang/arg-list in) '())
 
 (define (dlang/id-list in)
   (define tree (syntree 'list "" '()))
@@ -91,6 +93,14 @@
     (set! tok (syntree (token-type tok) (token-text tok) '()))
     (set! chldrn (append chldrn (list tok))))
   (token-match in 'rpar)
+  (syntree-children-set! tree chldrn)
+  tree)
+
+(define (dlang/expr-list in term)
+  (define tree (syntree 'list "" '()))
+  (define chldrn '())
+  (while (equal? term (token-type (buf-lookahead! in 1)))
+    (set! chldrn (append chldrn (list (dlang/expression in)))))
   (syntree-children-set! tree chldrn)
   tree)
 
