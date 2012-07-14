@@ -32,3 +32,11 @@
           " received '" (symbol->string (token-type actual)) " instead"))))
   actual)
 
+(define (token-matches? buf expect)
+  (define actual (buf-lookahead! buf 1))
+  (and (not (eof-object? actual))
+       (equal? expect (token-type actual))))
+
+(define (token->syntree tok)
+  (syntree (token-type tok) (token-text tok) '()))
+

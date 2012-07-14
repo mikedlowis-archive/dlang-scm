@@ -1,3 +1,4 @@
+(include "loop.scm")
 (declare (unit parser)
          (uses buf))
 
@@ -7,12 +8,11 @@
 ; Program := Expression*
 ;
 ; Expression := CoreForm
-;             | BasicExpr
-;             | BasicExpr ArgList
+;             | BasicExpr (ArgList)?
 ;
 ; CoreForm := 'def' ID Expression TERM
 ;           | 'set!' ID Expression TERM
-;           | 'if' Expression Expression Expression TERM
+;           | 'if' Expression Expression (Expression)? TERM
 ;           | 'begin' ExpBlock TERM
 ;           | 'func' IdList ExpBlock TERM
 ;
@@ -25,10 +25,8 @@
 ;
 ; IdList := '(' ID (',' ID)* ')'
 ;
-; ExpBlock := Expression*
+; ExpBlock := (Expression)*
 ;------------------------------------------------------------------------------
-
-(define (core-form? in) #f)
 
 (define (dlang/program in)
   (define result '())
@@ -47,7 +45,57 @@
           (match in 'rpar)))
       ret)))
 
-(define (dlang/core-form in) '())
+(define (dlang/core-form in)
+  (define tok (buf-lookahead! in 1))
+  (cond (token-text tok)
+    (("def")   (dlang/define in))
+    (("set!")  (dlang/assign in))
+    (("if")    (dlang/if in))
+    (("begin") (dlang/begin in))
+    (("func")  (dlang/func in))))
+
+(define (core-form? in) #f)
+
+(define (dlang/define in)
+  (define node '())
+  (keyword-match in "def")
+  (set! node
+    (syntree 'define "" (list (token-match in 'id) (dlang/expression in))))
+  (token-match in 'term)
+  node)
+
+(define (dlang/assign in)
+  (define node '())
+  (keyword-match in "set!")
+  (set! node
+    (syntree 'set "" (list (token-match in 'id) (dlang/expression in))))
+  (token-match in 'term)
+  node)
+
+(define (dlang/if in)
+  (define node '())
+  (keyword-match in "if")
+  (set! node
+    (syntree 'if "" (list (dlang/expression in) (dlang/expression in))))
+  (if (not (token-matches? in 'term))
+    (syntree-children-set! node
+      (append (syntree-children node) (list (dlang/expression in)))))
+  (token-match in 'term)
+  node)
+
+(define (dlang/begin in)
+  (define node '())
+  (keyword-match in "begin")
+  (set! node (dlang/block! in))
+  (token-match 'term)
+  node)
+
+(define (dlang/func in)
+  (define node (syntree 'func "" '()))
+  (keyword-match in "func")
+  (syntree-children-set! node (list (dlang/id-list in) (dlang/expr-block)))
+  (token-match in 'term)
+  node)
 
 (define (dlang/basic-expr in)
   (define tok (buf-lookahead! in 1))
@@ -86,19 +134,21 @@
 (define (dlang/arg-list in) '())
 
 (define (dlang/id-list in)
-  (define tree (syntree 'list "" '()))
+  (define tree (syntree 'args "" '()))
   (define chldrn '())
   (token-match in 'lpar)
-  (while (equal? 'id (token-type (buf-lookahead! in 1)))
-    (define tok (buf-consume! in))
-    (set! tok (syntree (token-type tok) (token-text tok) '()))
-    (set! chldrn (append chldrn (list tok))))
+  (if (not (token-matches? in 'rpar))
+    (begin
+      (set! chldrn (append chldrn (list (token->syntree (token-match in 'id)))))
+      (while (not (token-matches? in 'rpar))
+        (token-match in 'comma)
+        (set! chldrn (append chldrn (list (token->syntree (token-match in 'id))))))))
   (token-match in 'rpar)
   (syntree-children-set! tree chldrn)
   tree)
 
-(define (dlang/expr-list in term)
-  (define tree (syntree 'list "" '()))
+(define (dlang/expr-block in term)
+  (define tree (syntree 'block "" '()))
   (define chldrn '())
   (while (equal? term (token-type (buf-lookahead! in 1)))
     (set! chldrn (append chldrn (list (dlang/expression in)))))
