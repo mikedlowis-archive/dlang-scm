@@ -36,14 +36,14 @@
 (define (dlang/expression in)
   (if (core-form? in)
     (core-form in)
-    (let ((result (dlang/basic-expr in))
-          (ret    '()))
+    (let ((result (dlang/basic-expr in)))
       (if (equal? 'lpar (buf-lookahead! in 1))
         (begin
           (match in 'lpar)
-          (set! ret (dlang/expr-list in))
+          (set! result
+            (syntree 'apply (list result (dlang/expr-list in))))
           (match in 'rpar)))
-      ret)))
+      result)))
 
 (define (dlang/core-form in)
   (define tok (buf-lookahead! in 1))
@@ -139,10 +139,12 @@
   (token-match in 'lpar)
   (if (not (token-matches? in 'rpar))
     (begin
-      (set! chldrn (append chldrn (list (token->syntree (token-match in 'id)))))
+      (set! chldrn
+        (append chldrn (list (token->syntree (token-match in 'id)))))
       (while (not (token-matches? in 'rpar))
         (token-match in 'comma)
-        (set! chldrn (append chldrn (list (token->syntree (token-match in 'id))))))))
+        (set! chldrn
+          (append chldrn (list (token->syntree (token-match in 'id))))))))
   (token-match in 'rpar)
   (syntree-children-set! tree chldrn)
   tree)

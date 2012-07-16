@@ -12,6 +12,15 @@
 
 ; dlang/expression
 ;------------------------------------------------------------------------------
+(def-test "dlang/expression should parse a literal"
+  (call-with-input-string "abc"
+    (lambda (input)
+      (define lxr (make-lexer input))
+      (define result (dlang/expression lxr))
+      (and (syntree? result)
+           (equal? 'id (syntree-type result))
+           (equal? "abc" (syntree-text result))
+           (equal? '() (syntree-children result))))))
 
 ; dlang/core-form
 ;------------------------------------------------------------------------------
@@ -33,6 +42,15 @@
 
 ; dlang/basic-expr
 ;------------------------------------------------------------------------------
+(def-test "dlang/basic-expr should parse a literal"
+  (call-with-input-string "abc"
+    (lambda (input)
+      (define lxr (make-lexer input))
+      (define result (dlang/basic-expr lxr))
+      (and (syntree? result)
+           (equal? 'id (syntree-type result))
+           (equal? "abc" (syntree-text result))
+           (equal? '() (syntree-children result))))))
 
 ; dlang/operator-app
 ;------------------------------------------------------------------------------
