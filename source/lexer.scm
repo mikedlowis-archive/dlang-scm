@@ -129,13 +129,18 @@
 
 (define (dlang/id in)
   (define acc "")
-  (define ch (buf-lookahead! in 1))
-  (while (and (not (char-whitespace? ch))
-           (not (eof-object? ch))
-           (not (char=? ch #\#)))
+  (while (dlang/id-char? in)
     (set! acc (string-append acc (string (buf-consume! in))))
-    (set! ch (buf-lookahead! in 1)))
+    )
   (if (> (string-length acc) 0)
     (token 'id acc)
     (error "An Id was expected but none found.")))
+
+(define (dlang/id-char? in)
+  (define ch (buf-lookahead! in 1))
+  (and (not (eof-object? ch))
+       (not (char-whitespace? ch))
+       (case ch
+         ((#\( #\) #\; #\, #\' #\" #\$ #\#) #f)
+         (else #t))))
 

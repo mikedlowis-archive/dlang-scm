@@ -146,7 +146,7 @@
            (equal? '()   (syntree-children result))))))
 
 (def-test "dlang/id-list should recognize an id list of length 1"
-  (call-with-input-string "( a )"
+  (call-with-input-string "(a)"
     (lambda (input)
       (define lxr (make-lexer input))
       (define result (dlang/id-list lxr))
@@ -157,7 +157,7 @@
              (list (syntree 'id "a" '())))))))
 
 (def-test "dlang/id-list should recognize an id list of length 2"
-  (call-with-input-string "( a , b )"
+  (call-with-input-string "(a,b)"
     (lambda (input)
       (define lxr (make-lexer input))
       (define result (dlang/id-list lxr))
@@ -169,7 +169,7 @@
                    (syntree 'id "b" '())))))))
 
 (def-test "dlang/id-list should recognize an id list of length 3"
-  (call-with-input-string "( a , b , c )"
+  (call-with-input-string "(a,b,c)"
     (lambda (input)
       (define lxr (make-lexer input))
       (define result (dlang/id-list lxr))

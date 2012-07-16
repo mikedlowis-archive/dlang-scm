@@ -621,7 +621,7 @@
            (equal? 'id (token-type result))
            (equal? "abc" (token-text result))))))
 
-(def-test "dlang/id should stop recognition on whitepsace"
+(def-test "dlang/id should stop recognition on whitespace"
   (call-with-input-string "abc abc"
     (lambda (input)
       (define buffer (buf input read-char))
@@ -654,4 +654,135 @@
       (and (token? result)
            (equal? 'id (token-type result))
            (equal? "foo" (token-text result))))))
+
+(def-test "dlang/id should stop recognition when left paren encountered"
+  (call-with-input-string "foo("
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (define result (dlang/id buffer))
+      (and (token? result)
+           (equal? 'id (token-type result))
+           (equal? "foo" (token-text result))))))
+
+(def-test "dlang/id should stop recognition when right paren encountered"
+  (call-with-input-string "foo)"
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (define result (dlang/id buffer))
+      (and (token? result)
+           (equal? 'id (token-type result))
+           (equal? "foo" (token-text result))))))
+
+(def-test "dlang/id should stop recognition when semicolon encountered"
+  (call-with-input-string "foo;"
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (define result (dlang/id buffer))
+      (and (token? result)
+           (equal? 'id (token-type result))
+           (equal? "foo" (token-text result))))))
+
+(def-test "dlang/id should stop recognition when comma encountered"
+  (call-with-input-string "foo,"
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (define result (dlang/id buffer))
+      (and (token? result)
+           (equal? 'id (token-type result))
+           (equal? "foo" (token-text result))))))
+
+(def-test "dlang/id should stop recognition when single quote encountered"
+  (call-with-input-string "foo'"
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (define result (dlang/id buffer))
+      (and (token? result)
+           (equal? 'id (token-type result))
+           (equal? "foo" (token-text result))))))
+
+(def-test "dlang/id should stop recognition when double quote encountered"
+  (call-with-input-string "foo\""
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (define result (dlang/id buffer))
+      (and (token? result)
+           (equal? 'id (token-type result))
+           (equal? "foo" (token-text result))))))
+
+(def-test "dlang/id should stop recognition when dollar sign encountered"
+  (call-with-input-string "foo$"
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (define result (dlang/id buffer))
+      (and (token? result)
+           (equal? 'id (token-type result))
+           (equal? "foo" (token-text result))))))
+
+; dlang/id-char?
+;------------------------------------------------------------------------------
+(def-test "dlang/id-char? should return true for valid char"
+  (call-with-input-string "f"
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (equal? #t (dlang/id-char? buffer)))))
+
+(def-test "dlang/id-char? should return false for eof"
+  (call-with-input-string ""
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (equal? #f (dlang/id-char? buffer)))))
+
+(def-test "dlang/id-char? should return false for whitespace"
+  (call-with-input-string " "
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (equal? #f (dlang/id-char? buffer)))))
+
+(def-test "dlang/id-char? should return false for left paren"
+  (call-with-input-string "("
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (equal? #f (dlang/id-char? buffer)))))
+
+(def-test "dlang/id-char? should return false for right paren"
+  (call-with-input-string ")"
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (equal? #f (dlang/id-char? buffer)))))
+
+(def-test "dlang/id-char? should return false for semicolon"
+  (call-with-input-string ";"
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (equal? #f (dlang/id-char? buffer)))))
+
+(def-test "dlang/id-char? should return false for comma"
+  (call-with-input-string ","
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (equal? #f (dlang/id-char? buffer)))))
+
+(def-test "dlang/id-char? should return false for single quote"
+  (call-with-input-string "'"
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (equal? #f (dlang/id-char? buffer)))))
+
+(def-test "dlang/id-char? should return false for double quote"
+  (call-with-input-string "\""
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (equal? #f (dlang/id-char? buffer)))))
+
+(def-test "dlang/id-char? should return false for dollar sign"
+  (call-with-input-string "$"
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (equal? #f (dlang/id-char? buffer)))))
+
+(def-test "dlang/id-char? should return false for hash"
+  (call-with-input-string "#"
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (equal? #f (dlang/id-char? buffer)))))
 
