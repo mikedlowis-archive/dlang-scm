@@ -17,10 +17,7 @@
     (lambda (input)
       (define lxr (make-lexer input))
       (define result (dlang/expression lxr))
-      (and (syntree? result)
-           (equal? 'id (syntree-type result))
-           (equal? "abc" (syntree-text result))
-           (equal? '() (syntree-children result))))))
+      (syntree=? result (syntree 'id "abc" '())))))
 
 ; dlang/core-form
 ;------------------------------------------------------------------------------
@@ -47,10 +44,24 @@
     (lambda (input)
       (define lxr (make-lexer input))
       (define result (dlang/basic-expr lxr))
-      (and (syntree? result)
-           (equal? 'id (syntree-type result))
-           (equal? "abc" (syntree-text result))
-           (equal? '() (syntree-children result))))))
+      (syntree=? result (syntree 'id "abc" '())))))
+
+;(def-test "dlang/basic-expr should parse an infix operator application"
+;  (call-with-input-string "(1.0) * 2.0)"
+;    (lambda (input)
+;      (define lxr (make-lexer input))
+;      (define result (dlang/basic-expr lxr))
+;      (syntree=? result (syntree 'id "abc" '())
+;      (define expect
+;        (syntree 'apply "" (list
+;        ;  (syntree 'id "+" '())
+;          (syntree 'number "1.0" '()))))
+;        ;  (syntree 'number "1.0" '()))))
+;      (equal? result expect))))
+;      ;(and (syntree? result)
+;      ;     (equal? 'apply (syntree-type result))
+;      ;     (equal? "" (syntree-text result))
+;      ;     (equal? '() (syntree-children result))))))
 
 ; dlang/operator-app
 ;------------------------------------------------------------------------------
@@ -62,10 +73,7 @@
     (lambda (input)
       (define lxr (make-lexer input))
       (define result (dlang/operator lxr))
-      (and (syntree? result)
-           (equal? 'id (syntree-type result))
-           (equal? "abc" (syntree-text result))
-           (equal? '() (syntree-children result))))))
+      (syntree=? result (syntree 'id "abc" '())))))
 
 (def-test "dlang/operator should error if not an Id"
   (call-with-input-string "1.0"
@@ -88,51 +96,35 @@
     (lambda (input)
       (define lxr (make-lexer input))
       (define result (dlang/literal lxr))
-      (and (syntree? result)
-           (equal? 'id (syntree-type result))
-           (equal? "abc" (syntree-text result))
-           (equal? '() (syntree-children result))
-           (eof-object? (buf-lookahead! lxr 1))))))
+      (syntree=? result (syntree 'id "abc" '())))))
 
 (def-test "dlang/literal should parse a Character"
   (call-with-input-string "'a'"
     (lambda (input)
       (define lxr (make-lexer input))
       (define result (dlang/literal lxr))
-      (and (syntree? result)
-           (equal? 'character (syntree-type result))
-           (equal? "'a'" (syntree-text result))
-           (equal? '() (syntree-children result))))))
+      (syntree=? result (syntree 'character "'a'" '())))))
 
 (def-test "dlang/literal should parse a String"
   (call-with-input-string "\"abc\""
     (lambda (input)
       (define lxr (make-lexer input))
       (define result (dlang/literal lxr))
-      (and (syntree? result)
-           (equal? 'string (syntree-type result))
-           (equal? "\"abc\"" (syntree-text result))
-           (equal? '() (syntree-children result))))))
+      (syntree=? result (syntree 'string "\"abc\"" '())))))
 
 (def-test "dlang/literal should parse a Symbol"
   (call-with-input-string "$abc"
     (lambda (input)
       (define lxr (make-lexer input))
       (define result (dlang/literal lxr))
-      (and (syntree? result)
-           (equal? 'symbol (syntree-type result))
-           (equal? "$abc" (syntree-text result))
-           (equal? '() (syntree-children result))))))
+      (syntree=? result (syntree 'symbol "$abc" '())))))
 
 (def-test "dlang/literal should parse a Number"
   (call-with-input-string "1.0"
     (lambda (input)
       (define lxr (make-lexer input))
       (define result (dlang/literal lxr))
-      (and (syntree? result)
-           (equal? 'number (syntree-type result))
-           (equal? "1.0" (syntree-text result))
-           (equal? '() (syntree-children result))))))
+      (syntree=? result (syntree 'number "1.0" '())))))
 
 (def-test "dlang/literal should error when no literal found"
   (call-with-input-string "("
@@ -158,46 +150,39 @@
     (lambda (input)
       (define lxr (make-lexer input))
       (define result (dlang/id-list lxr))
-      (and (syntree? result)
-           (equal? 'args (syntree-type result))
-           (equal? ""    (syntree-text result))
-           (equal? '()   (syntree-children result))))))
+      (syntree=? result (syntree 'args "" '())))))
 
 (def-test "dlang/id-list should recognize an id list of length 1"
   (call-with-input-string "(a)"
     (lambda (input)
       (define lxr (make-lexer input))
       (define result (dlang/id-list lxr))
-      (and (syntree? result)
-           (equal? 'args (syntree-type result))
-           (equal? ""    (syntree-text result))
-           (equal? (syntree-children result)
-             (list (syntree 'id "a" '())))))))
+      (syntree=? result
+        (syntree 'args ""
+          (list (syntree 'id "a" '())))))))
 
 (def-test "dlang/id-list should recognize an id list of length 2"
   (call-with-input-string "(a,b)"
     (lambda (input)
       (define lxr (make-lexer input))
       (define result (dlang/id-list lxr))
-      (and (syntree? result)
-           (equal? 'args (syntree-type result))
-           (equal? ""    (syntree-text result))
-           (equal? (syntree-children result)
-             (list (syntree 'id "a" '())
-                   (syntree 'id "b" '())))))))
+      (syntree=? result
+        (syntree 'args ""
+          (list
+            (syntree 'id "a" '())
+            (syntree 'id "b" '())))))))
 
 (def-test "dlang/id-list should recognize an id list of length 3"
   (call-with-input-string "(a,b,c)"
     (lambda (input)
       (define lxr (make-lexer input))
       (define result (dlang/id-list lxr))
-      (and (syntree? result)
-           (equal? 'args (syntree-type result))
-           (equal? ""    (syntree-text result))
-           (equal? (syntree-children result)
-             (list (syntree 'id "a" '())
-                   (syntree 'id "b" '())
-                   (syntree 'id "c" '())))))))
+      (syntree=? result
+        (syntree 'args ""
+          (list
+            (syntree 'id "a" '())
+            (syntree 'id "b" '())
+            (syntree 'id "c" '())))))))
 
 (def-test "dlang/id-list should error when non-id recieved"
   (call-with-input-string "(1.0)"

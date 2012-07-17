@@ -6,6 +6,22 @@
 (define-record syntree type text children)
 (define syntree make-syntree)
 
+(define (syntree=? tr1 tr2)
+  (and (equal? (syntree-type tr1) (syntree-type tr2))
+       (equal? (syntree-text tr1) (syntree-text tr2))
+       (syntree-children=? (syntree-children tr1) (syntree-children tr2))))
+
+(define (syntree-children=? ch1 ch2)
+  (and
+    (or
+      (and (null? ch1) (null? ch2))
+      (and (not (null? ch1)) (not (null? ch2))))
+    (if (null? ch1)
+      #t ; If we got here and one is null then BOTH must be, hence equal
+      (and
+        (syntree=? (car ch1) (car ch2))
+        (syntree-children=? (cdr ch1) (cdr ch2))))))
+
 (define (char-match buf expect)
   (define actual (buf-lookahead! buf 1))
   (if (eof-object? actual)
