@@ -109,10 +109,10 @@
         (op '()))
     (token-match in 'lpar)
     (set! parts (append (list (dlang/expression in)) parts))
-    ;(set! parts (cons parts (list (dlang/operator in))))
-    ;(set! parts (append parts (list (dlang/expression in))))
+    (set! parts (append (list (dlang/operator in)) parts))
+    (set! parts (append parts (list (dlang/expression in))))
     (token-match in 'rpar)
-    ;(syntree-children-set! tree parts)
+    (syntree-children-set! tree parts)
     tree))
 
 (define (dlang/operator in)

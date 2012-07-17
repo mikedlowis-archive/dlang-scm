@@ -46,22 +46,17 @@
       (define result (dlang/basic-expr lxr))
       (syntree=? result (syntree 'id "abc" '())))))
 
-;(def-test "dlang/basic-expr should parse an infix operator application"
-;  (call-with-input-string "(1.0) * 2.0)"
-;    (lambda (input)
-;      (define lxr (make-lexer input))
-;      (define result (dlang/basic-expr lxr))
-;      (syntree=? result (syntree 'id "abc" '())
-;      (define expect
-;        (syntree 'apply "" (list
-;        ;  (syntree 'id "+" '())
-;          (syntree 'number "1.0" '()))))
-;        ;  (syntree 'number "1.0" '()))))
-;      (equal? result expect))))
-;      ;(and (syntree? result)
-;      ;     (equal? 'apply (syntree-type result))
-;      ;     (equal? "" (syntree-text result))
-;      ;     (equal? '() (syntree-children result))))))
+(def-test "dlang/basic-expr should parse an infix operator application"
+  (call-with-input-string "(1.0 * 2.0)"
+    (lambda (input)
+      (define lxr (make-lexer input))
+      (define result (dlang/basic-expr lxr))
+      (syntree=? result
+        (syntree 'apply ""
+          (list
+            (syntree 'id "*" '())
+            (syntree 'number "1.0" '())
+            (syntree 'number "2.0" '())))))))
 
 ; dlang/operator-app
 ;------------------------------------------------------------------------------
