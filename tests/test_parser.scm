@@ -189,6 +189,17 @@
 
 ; dlang/operator-app
 ;------------------------------------------------------------------------------
+(def-test "dlang/operator-app should parse an infix operator application"
+  (call-with-input-string "(1.0 * 2.0)"
+    (lambda (input)
+      (define lxr (make-lexer input))
+      (define result (dlang/operator-app lxr))
+      (syntree=? result
+        (syntree 'apply ""
+          (list
+            (syntree 'id "*" '())
+            (syntree 'number "1.0" '())
+            (syntree 'number "2.0" '())))))))
 
 ; dlang/operator
 ;------------------------------------------------------------------------------
