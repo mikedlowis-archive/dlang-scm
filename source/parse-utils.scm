@@ -53,6 +53,15 @@
   (and (not (eof-object? actual))
        (equal? expect (token-type actual))))
 
+(define (keyword-match buf expect)
+  (define actual (buf-lookahead! buf 1))
+  (if (and (token-matches? buf 'id)
+           (equal? expect (token-text actual)))
+    (buf-consume! buf)
+    (error
+      (string-append
+      "Expected '" expect "', received '" (token-text actual) "' instead"))))
+
 (define (token->syntree tok)
   (syntree (token-type tok) (token-text tok) '()))
 

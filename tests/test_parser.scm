@@ -12,30 +12,159 @@
 
 ; dlang/expression
 ;------------------------------------------------------------------------------
-(def-test "dlang/expression should parse a literal"
-  (call-with-input-string "abc"
-    (lambda (input)
-      (define lxr (make-lexer input))
-      (define result (dlang/expression lxr))
-      (syntree=? result (syntree 'id "abc" '())))))
 
 ; dlang/core-form
 ;------------------------------------------------------------------------------
 
 ; dlang/define
 ;------------------------------------------------------------------------------
+(def-test "dlang/define should parse a variable definition"
+  (call-with-input-string "def foo 1.0;"
+    (lambda (input)
+      (define lxr (make-lexer input))
+      (define result (dlang/define lxr))
+      (syntree=? result
+        (syntree 'define ""
+          (list
+            (syntree 'id "foo" '())
+            (syntree 'number "1.0" '())))))))
 
 ; dlang/assign
 ;------------------------------------------------------------------------------
+(def-test "dlang/assign should parse a variable definition"
+  (call-with-input-string "set! foo 1.0;"
+    (lambda (input)
+      (define lxr (make-lexer input))
+      (define result (dlang/assign lxr))
+      (syntree=? result
+        (syntree 'assign ""
+          (list
+            (syntree 'id "foo" '())
+            (syntree 'number "1.0" '())))))))
 
 ; dlang/if
 ;------------------------------------------------------------------------------
+(def-test "dlang/if should parse an if statement with one branch"
+  (call-with-input-string "if cond result1;"
+    (lambda (input)
+      (define lxr (make-lexer input))
+      (define result (dlang/if lxr))
+      (syntree=? result
+        (syntree 'if ""
+          (list
+            (syntree 'id "cond" '())
+            (syntree 'id "result1" '())))))))
+
+(def-test "dlang/if should parse an if statement with two branches"
+  (call-with-input-string "if cond result1 result2;"
+    (lambda (input)
+      (define lxr (make-lexer input))
+      (define result (dlang/if lxr))
+      (syntree=? result
+        (syntree 'if ""
+          (list
+            (syntree 'id "cond" '())
+            (syntree 'id "result1" '())
+            (syntree 'id "result2" '())))))))
 
 ; dlang/begin
 ;------------------------------------------------------------------------------
+(def-test "dlang/begin should parse a begin block with 0 expressions"
+  (call-with-input-string "begin;"
+    (lambda (input)
+      (define lxr (make-lexer input))
+      (define result (dlang/begin lxr))
+      (syntree=? result
+        (syntree 'begin "" '())))))
+
+(def-test "dlang/begin should parse a begin block with 1 expression"
+  (call-with-input-string "begin stm1;"
+    (lambda (input)
+      (define lxr (make-lexer input))
+      (define result (dlang/begin lxr))
+      (syntree=? result
+        (syntree 'begin ""
+          (list
+            (syntree 'id "stm1" '())))))))
+
+(def-test "dlang/begin should parse a begin block with 2 expressions"
+  (call-with-input-string "begin stm1 stm2;"
+    (lambda (input)
+      (define lxr (make-lexer input))
+      (define result (dlang/begin lxr))
+      (syntree=? result
+        (syntree 'begin ""
+          (list
+            (syntree 'id "stm1" '())
+            (syntree 'id "stm2" '())))))))
 
 ; dlang/func
 ;------------------------------------------------------------------------------
+(def-test "dlang/func should parse an empty func"
+  (call-with-input-string "func();"
+    (lambda (input)
+      (define lxr (make-lexer input))
+      (define result (dlang/func lxr))
+      (syntree=? result
+        (syntree 'func ""
+          (list
+            (syntree 'args "" '())
+            (syntree 'block "" '())))))))
+
+(def-test "dlang/func should parse a func with one statement in the body"
+  (call-with-input-string "func() stm1;"
+    (lambda (input)
+      (define lxr (make-lexer input))
+      (define result (dlang/func lxr))
+      (syntree=? result
+        (syntree 'func ""
+          (list
+            (syntree 'args "" '())
+            (syntree 'block ""
+              (list
+                (syntree 'id "stm1" '())))))))))
+
+(def-test "dlang/func should parse a func with two statements in the body"
+  (call-with-input-string "func() stm1 stm2;"
+    (lambda (input)
+      (define lxr (make-lexer input))
+      (define result (dlang/func lxr))
+      (syntree=? result
+        (syntree 'func ""
+          (list
+            (syntree 'args "" '())
+            (syntree 'block ""
+              (list
+                (syntree 'id "stm1" '())
+                (syntree 'id "stm2" '())))))))))
+
+(def-test "dlang/func should parse a func with one param"
+  (call-with-input-string "func(a);"
+    (lambda (input)
+      (define lxr (make-lexer input))
+      (define result (dlang/func lxr))
+      (syntree=? result
+        (syntree 'func ""
+          (list
+            (syntree 'args ""
+              (list
+                (syntree 'id "a" '())
+                ))
+            (syntree 'block "" '())))))))
+
+(def-test "dlang/func should parse a func with two params"
+  (call-with-input-string "func(a,b);"
+    (lambda (input)
+      (define lxr (make-lexer input))
+      (define result (dlang/func lxr))
+      (syntree=? result
+        (syntree 'func ""
+          (list
+            (syntree 'args ""
+              (list
+                (syntree 'id "a" '())
+                (syntree 'id "b" '())))
+            (syntree 'block "" '())))))))
 
 ; dlang/basic-expr
 ;------------------------------------------------------------------------------

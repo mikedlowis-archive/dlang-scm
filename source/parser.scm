@@ -34,8 +34,8 @@
     (append result (list (dlang/expression in)))))
 
 (define (dlang/expression in)
-  (if (core-form? in)
-    (core-form in)
+  (if (dlang/core-form? in)
+    (dlang/core-form in)
     (let ((result (dlang/basic-expr in)))
       (if (equal? 'lpar (buf-lookahead! in 1))
         (begin
@@ -54,13 +54,18 @@
     (("begin") (dlang/begin in))
     (("func")  (dlang/func in))))
 
-(define (core-form? in) #f)
+(define (dlang/core-form? in) #f)
+  ;(define tok (buf-lookahead! in 1))
+  ;(cond (token-text tok)
+  ;  (("def" "set!" "if" "begin" "func") #t)
+  ;  (else #f)))
 
 (define (dlang/define in)
   (define node '())
   (keyword-match in "def")
   (set! node
-    (syntree 'define "" (list (token-match in 'id) (dlang/expression in))))
+    (syntree 'define ""
+      (list (token->syntree (token-match in 'id)) (dlang/expression in))))
   (token-match in 'term)
   node)
 
@@ -68,7 +73,8 @@
   (define node '())
   (keyword-match in "set!")
   (set! node
-    (syntree 'set "" (list (token-match in 'id) (dlang/expression in))))
+    (syntree 'assign ""
+      (list (token->syntree (token-match in 'id)) (dlang/expression in))))
   (token-match in 'term)
   node)
 
@@ -86,15 +92,17 @@
 (define (dlang/begin in)
   (define node '())
   (keyword-match in "begin")
-  (set! node (dlang/block! in))
-  (token-match 'term)
+  (set! node (dlang/expr-block in 'term))
+  (token-match in 'term)
+  (syntree-type-set! node 'begin)
   node)
 
 (define (dlang/func in)
   (define node (syntree 'func "" '()))
   (keyword-match in "func")
-  (syntree-children-set! node (list (dlang/id-list in) (dlang/expr-block)))
+  (syntree-children-set! node (list (dlang/id-list in) (dlang/expr-block in 'term)))
   (token-match in 'term)
+  (syntree-type-set! node 'func)
   node)
 
 (define (dlang/basic-expr in)
@@ -152,7 +160,7 @@
 (define (dlang/expr-block in term)
   (define tree (syntree 'block "" '()))
   (define chldrn '())
-  (while (equal? term (token-type (buf-lookahead! in 1)))
+  (while (not (token-matches? in term))
     (set! chldrn (append chldrn (list (dlang/expression in)))))
   (syntree-children-set! tree chldrn)
   tree)
