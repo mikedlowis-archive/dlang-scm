@@ -15,6 +15,57 @@
 
 ; dlang/core-form
 ;------------------------------------------------------------------------------
+(def-test "dlang/define should parse a variable definition"
+  (call-with-input-string "def foo 1.0;"
+    (lambda (input)
+      (define lxr (make-lexer input))
+      (define result (dlang/core-form lxr))
+      (syntree=? result
+        (syntree 'define ""
+          (list
+            (syntree 'id "foo" '())
+            (syntree 'number "1.0" '())))))))
+
+(def-test "dlang/core-form should parse a variable assignment"
+  (call-with-input-string "set! foo 1.0;"
+    (lambda (input)
+      (define lxr (make-lexer input))
+      (define result (dlang/core-form lxr))
+      (syntree=? result
+        (syntree 'assign ""
+          (list
+            (syntree 'id "foo" '())
+            (syntree 'number "1.0" '())))))))
+
+(def-test "dlang/core-form should parse an if statement"
+  (call-with-input-string "if cond result1;"
+    (lambda (input)
+      (define lxr (make-lexer input))
+      (define result (dlang/core-form lxr))
+      (syntree=? result
+        (syntree 'if ""
+          (list
+            (syntree 'id "cond" '())
+            (syntree 'id "result1" '())))))))
+
+(def-test "dlang/core-form should parse a begin block"
+  (call-with-input-string "begin;"
+    (lambda (input)
+      (define lxr (make-lexer input))
+      (define result (dlang/core-form lxr))
+      (syntree=? result
+        (syntree 'begin "" '())))))
+
+(def-test "dlang/core-form should parse a func"
+  (call-with-input-string "func();"
+    (lambda (input)
+      (define lxr (make-lexer input))
+      (define result (dlang/core-form lxr))
+      (syntree=? result
+        (syntree 'func ""
+          (list
+            (syntree 'args "" '())
+            (syntree 'block "" '())))))))
 
 ; dlang/define
 ;------------------------------------------------------------------------------
@@ -31,7 +82,7 @@
 
 ; dlang/assign
 ;------------------------------------------------------------------------------
-(def-test "dlang/assign should parse a variable definition"
+(def-test "dlang/assign should parse a variable assignment"
   (call-with-input-string "set! foo 1.0;"
     (lambda (input)
       (define lxr (make-lexer input))
