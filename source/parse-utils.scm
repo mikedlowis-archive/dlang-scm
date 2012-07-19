@@ -68,10 +68,11 @@
 (define (test-apply fn buf . args)
   (define result '())
   (buf-mark! buf)
-  (call/cc
-    (lambda (cont)
-      (with-exception-handler
-        (lambda (x) (cont '()))
-        (lambda ()  (set! result (apply fn (append buf args)))))))
+  (set! result
+    (call/cc
+      (lambda (cont)
+        (with-exception-handler
+          (lambda (x) (cont '()))
+          (lambda ()  (apply fn (append (list buf) args)))))))
   (buf-release! buf)
   (not (null? result)))

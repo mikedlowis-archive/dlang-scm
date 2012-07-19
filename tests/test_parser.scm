@@ -366,6 +366,58 @@
 
 ; dlang/arg-list
 ;------------------------------------------------------------------------------
+(def-test "dlang/arg-list should recognize an empty id list"
+  (call-with-input-string "()"
+    (lambda (input)
+      (define lxr (make-lexer input))
+      (define result (dlang/arg-list lxr))
+      (syntree=? result (syntree 'arglist "" '())))))
+
+(def-test "dlang/arg-list should recognize an arg list of length 1"
+  (call-with-input-string "(a)"
+    (lambda (input)
+      (define lxr (make-lexer input))
+      (define result (dlang/arg-list lxr))
+      (syntree=? result
+        (syntree 'arglist ""
+          (list (syntree 'id "a" '())))))))
+
+(def-test "dlang/arg-list should recognize an arg list of length 2"
+  (call-with-input-string "(a,1.0)"
+    (lambda (input)
+      (define lxr (make-lexer input))
+      (define result (dlang/arg-list lxr))
+      (syntree=? result
+        (syntree 'arglist ""
+          (list
+            (syntree 'id "a" '())
+            (syntree 'number "1.0" '())))))))
+
+(def-test "dlang/arg-list should recognize an arg list of length 3"
+  (call-with-input-string "(a,1.0,$c)"
+    (lambda (input)
+      (define lxr (make-lexer input))
+      (define result (dlang/arg-list lxr))
+      (syntree=? result
+        (syntree 'arglist ""
+          (list
+            (syntree 'id "a" '())
+            (syntree 'number "1.0" '())
+            (syntree 'symbol "$c" '())))))))
+
+; dlang/arg-list?
+;------------------------------------------------------------------------------
+(def-test "dlang/arg-list? should return true if input contains an arg list"
+  (call-with-input-string "(a, 1.0, $c)"
+    (lambda (input)
+      (define lxr (make-lexer input))
+      (equal? #t (dlang/arg-list? lxr)))))
+
+(def-test "dlang/arg-list? should return false if input does not contain an arg list"
+  (call-with-input-string "(a b c)"
+    (lambda (input)
+      (define lxr (make-lexer input))
+      (equal? #f (dlang/arg-list? lxr)))))
 
 ; dlang/id-list
 ;------------------------------------------------------------------------------

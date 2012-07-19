@@ -139,7 +139,21 @@
     (abort "Expected a literal"))
   (syntree (token-type tok) (token-text tok) '()))
 
-(define (dlang/arg-list in) '())
+(define (dlang/arg-list in)
+  (define tree (syntree 'arglist "" '()))
+  (define chldrn '())
+  (token-match in 'lpar)
+  (if (not (token-matches? in 'rpar))
+    (begin
+      (set! chldrn
+        (append chldrn (list (dlang/expression in))))
+      (while (not (token-matches? in 'rpar))
+        (token-match in 'comma)
+        (set! chldrn
+          (append chldrn (list (dlang/expression in)))))))
+  (token-match in 'rpar)
+  (syntree-children-set! tree chldrn)
+  tree)
 
 (define (dlang/arg-list? in)
   (test-apply dlang/arg-list in))
