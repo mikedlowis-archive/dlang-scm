@@ -85,7 +85,7 @@
         (char-numeric? (buf-lookahead! in 1)))
     (while (char-numeric? (buf-lookahead! in 1))
       (set! text (string-append text (string (buf-consume! in)))))
-    (error "Expected an integer"))
+    (abort "Expected an integer"))
   text)
 
 (define (dlang/decimal in)
@@ -108,7 +108,7 @@
     (string-append
       (string (char-match in #\'))
       (if (eof-object? (buf-lookahead! in 1))
-        (error "Unexpected EOF while parsing character literal")
+        (abort "Unexpected EOF while parsing character literal")
         (string (buf-consume! in)))
       (string (char-match in #\')) )))
 
@@ -130,11 +130,10 @@
 (define (dlang/id in)
   (define acc "")
   (while (dlang/id-char? in)
-    (set! acc (string-append acc (string (buf-consume! in))))
-    )
+    (set! acc (string-append acc (string (buf-consume! in)))))
   (if (> (string-length acc) 0)
     (token 'id acc)
-    (error "An Id was expected but none found.")))
+    (abort "An Id was expected but none found.")))
 
 (define (dlang/id-char? in)
   (define ch (buf-lookahead! in 1))

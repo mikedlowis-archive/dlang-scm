@@ -25,10 +25,10 @@
 (define (char-match buf expect)
   (define actual (buf-lookahead! buf 1))
   (if (eof-object? actual)
-    (error (string-append "Expected '" (string expect) "', received EOF instead"))
+    (abort (string-append "Expected '" (string expect) "', received EOF instead"))
     (if (equal? expect actual)
       (buf-consume! buf)
-      (error
+      (abort
         (string-append
           "Expected '" (string expect) "', received '" (string actual) "' instead"))))
   actual)
@@ -36,13 +36,13 @@
 (define (token-match buf expect)
   (define actual (buf-lookahead! buf 1))
   (if (eof-object? actual)
-    (error
+    (abort
       (string-append
         "Expected a token of type '" (symbol->string expect) ","
         " received EOF instead"))
     (if (equal? expect (token-type actual))
       (buf-consume! buf)
-      (error
+      (abort
         (string-append
           "Expected a token of type '" (symbol->string expect) ","
           " received '" (symbol->string (token-type actual)) " instead"))))
@@ -58,10 +58,20 @@
   (if (and (token-matches? buf 'id)
            (equal? expect (token-text actual)))
     (buf-consume! buf)
-    (error
+    (abort
       (string-append
-      "Expected '" expect "', received '" (token-text actual) "' instead"))))
+        "Expected '" expect "', received '" (token-text actual) "' instead"))))
 
 (define (token->syntree tok)
   (syntree (token-type tok) (token-text tok) '()))
 
+(define (test-apply fn buf . args)
+  (define result '())
+  (buf-mark! buf)
+  (call/cc
+    (lambda (cont)
+      (with-exception-handler
+        (lambda (x) (cont '()))
+        (lambda ()  (set! result (apply fn (append buf args)))))))
+  (buf-release! buf)
+  (not (null? result)))

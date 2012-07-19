@@ -37,13 +37,7 @@
   (if (dlang/core-form? in)
     (dlang/core-form in)
     (let ((result (dlang/basic-expr in)))
-      (if (equal? 'lpar (buf-lookahead! in 1))
-        (begin
-          (match in 'lpar)
-          (set! result
-            (syntree 'apply (list result (dlang/expr-list in))))
-          (match in 'rpar)))
-      result)))
+      (if (dlang/arg-list? in) (dlang/arg-list? in result) result))))
 
 (define (dlang/core-form in)
   (define tok (buf-lookahead! in 1))
@@ -105,7 +99,8 @@
 (define (dlang/func in)
   (define node (syntree 'func "" '()))
   (keyword-match in "func")
-  (syntree-children-set! node (list (dlang/id-list in) (dlang/expr-block in 'term)))
+  (syntree-children-set! node
+    (list (dlang/id-list in) (dlang/expr-block in 'term)))
   (token-match in 'term)
   (syntree-type-set! node 'func)
   node)
@@ -141,10 +136,13 @@
           (equal? 'symbol type)
           (equal? 'number type))
     (set! tok (buf-consume! in))
-    (error "Expected a literal"))
+    (abort "Expected a literal"))
   (syntree (token-type tok) (token-text tok) '()))
 
 (define (dlang/arg-list in) '())
+
+(define (dlang/arg-list? in)
+  (test-apply dlang/arg-list in))
 
 (define (dlang/id-list in)
   (define tree (syntree 'args "" '()))

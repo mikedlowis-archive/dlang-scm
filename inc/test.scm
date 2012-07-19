@@ -18,4 +18,13 @@
         (set! error prev)
         (equal? expect result)))))
 
+(define-syntax check-exception
+  (syntax-rules ()
+    ((_ expect expr)
+      (equal? expect
+        (call/cc
+          (lambda (cont)
+            (with-exception-handler
+              (lambda (x) (cont x))
+              (lambda ()  expr))))))))
 

@@ -334,14 +334,14 @@
   (call-with-input-string "abc"
     (lambda (input)
       (define buffer (buf input read-char))
-      (check-error "Expected an integer"
+      (check-exception "Expected an integer"
         (dlang/integer buffer)))))
 
 (def-test "dlang/integer should error when EOF"
   (call-with-input-string ""
     (lambda (input)
       (define buffer (buf input read-char))
-      (check-error "Expected an integer"
+      (check-exception "Expected an integer"
         (dlang/integer buffer)))))
 
 ; dlang/decimal
@@ -374,14 +374,14 @@
   (call-with-input-string ". "
     (lambda (input)
       (define buffer (buf input read-char))
-      (check-error "Expected an integer"
+      (check-exception "Expected an integer"
         (dlang/decimal buffer)))))
 
 (def-test "dlang/decimal should error when EOF"
   (call-with-input-string ""
     (lambda (input)
       (define buffer (buf input read-char))
-      (check-error "Expected '.', received EOF instead"
+      (check-exception "Expected '.', received EOF instead"
         (dlang/decimal buffer)))))
 
 ; dlang/exponent
@@ -430,14 +430,14 @@
   (call-with-input-string "e "
     (lambda (input)
       (define buffer (buf input read-char))
-      (check-error "Expected an integer"
+      (check-exception "Expected an integer"
         (dlang/exponent buffer)))))
 
 (def-test "dlang/exponent should error when EOF"
   (call-with-input-string ""
     (lambda (input)
       (define buffer (buf input read-char))
-      (check-error "Expected 'E', received EOF instead"
+      (check-exception "Expected 'E', received EOF instead"
         (dlang/exponent buffer)))))
 
 ; dlang/character
@@ -455,21 +455,21 @@
   (call-with-input-string "a'"
     (lambda (input)
       (define buffer (buf input read-char))
-      (check-error "Expected ''', received 'a' instead"
+      (check-exception "Expected ''', received 'a' instead"
         (dlang/character buffer)))))
 
 (def-test "dlang/character should error when missing second single quote"
   (call-with-input-string "'a"
     (lambda (input)
       (define buffer (buf input read-char))
-      (check-error "Expected ''', received EOF instead"
+      (check-exception "Expected ''', received EOF instead"
         (dlang/character buffer)))))
 
 (def-test "dlang/character should error when EOF reached"
   (call-with-input-string "'"
     (lambda (input)
       (define buffer (buf input read-char))
-      (check-error "Unexpected EOF while parsing character literal"
+      (check-exception "Unexpected EOF while parsing character literal"
         (dlang/character buffer)))))
 
 ; dlang/string
@@ -514,21 +514,21 @@
   (call-with-input-string "a\""
     (lambda (input)
       (define buffer (buf input read-char))
-      (check-error "Expected '\"', received 'a' instead"
+      (check-exception "Expected '\"', received 'a' instead"
         (dlang/string buffer)))))
 
 (def-test "dlang/string should error when missing second double quote"
   (call-with-input-string "\"a"
     (lambda (input)
       (define buffer (buf input read-char))
-      (check-error "Expected '\"', received EOF instead"
+      (check-exception "Expected '\"', received EOF instead"
         (dlang/string buffer)))))
 
 (def-test "dlang/string should error when EOF reached"
   (call-with-input-string "\""
     (lambda (input)
       (define buffer (buf input read-char))
-      (check-error "Expected '\"', received EOF instead"
+      (check-exception "Expected '\"', received EOF instead"
         (dlang/string buffer)))))
 
 ; dlang/symbol
@@ -582,14 +582,14 @@
   (call-with-input-string "$"
     (lambda (input)
       (define buffer (buf input read-char))
-      (check-error "An Id was expected but none found."
+      (check-exception "An Id was expected but none found."
         (dlang/symbol buffer)))))
 
 (def-test "dlang/symbol should error when EOF"
   (call-with-input-string ""
     (lambda (input)
       (define buffer (buf input read-char))
-      (check-error "Expected '$', received EOF instead"
+      (check-exception "Expected '$', received EOF instead"
         (dlang/symbol buffer)))))
 
 ; dlang/id
@@ -643,7 +643,7 @@
   (call-with-input-string ""
     (lambda (input)
       (define buffer (buf input read-char))
-      (check-error "An Id was expected but none found."
+      (check-exception "An Id was expected but none found."
         (dlang/id buffer)))))
 
 (def-test "dlang/id should stop recognition when comment encountered"
