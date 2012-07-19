@@ -67,6 +67,44 @@
             (syntree 'args "" '())
             (syntree 'block "" '())))))))
 
+; dlang/core-form?
+;------------------------------------------------------------------------------
+(def-test "dlang/core-form? should recognize def as a core form"
+  (call-with-input-string "def"
+    (lambda (input)
+      (define lxr (make-lexer input))
+      (equal? #t (dlang/core-form? lxr)))))
+
+(def-test "dlang/core-form? should recognize set! as a core form"
+  (call-with-input-string "set!"
+    (lambda (input)
+      (define lxr (make-lexer input))
+      (equal? #t (dlang/core-form? lxr)))))
+
+(def-test "dlang/core-form? should recognize def as a core form"
+  (call-with-input-string "if"
+    (lambda (input)
+      (define lxr (make-lexer input))
+      (equal? #t (dlang/core-form? lxr)))))
+
+(def-test "dlang/core-form? should recognize def as a core form"
+  (call-with-input-string "begin"
+    (lambda (input)
+      (define lxr (make-lexer input))
+      (equal? #t (dlang/core-form? lxr)))))
+
+(def-test "dlang/core-form? should recognize def as a core form"
+  (call-with-input-string "func"
+    (lambda (input)
+      (define lxr (make-lexer input))
+      (equal? #t (dlang/core-form? lxr)))))
+
+(def-test "dlang/core-form? should return false for non-coreform"
+  (call-with-input-string "foo"
+    (lambda (input)
+      (define lxr (make-lexer input))
+      (equal? #f (dlang/core-form? lxr)))))
+
 ; dlang/define
 ;------------------------------------------------------------------------------
 (def-test "dlang/define should parse a variable definition"
