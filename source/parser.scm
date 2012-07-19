@@ -106,8 +106,7 @@
   node)
 
 (define (dlang/basic-expr in)
-  (define tok (buf-lookahead! in 1))
-  (if (equal? 'lpar (token-type tok))
+  (if (token-matches? in 'lpar)
     (dlang/operator-app in)
     (dlang/literal in)))
 

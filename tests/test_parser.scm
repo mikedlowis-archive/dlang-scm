@@ -290,6 +290,28 @@
             (syntree 'number "1.0" '())
             (syntree 'number "2.0" '())))))))
 
+(def-test "dlang/operator-app should error when first paren missing"
+  (call-with-input-string "1.0 * 2.0)"
+    (lambda (input)
+      (define lxr (make-lexer input))
+      (check-exception
+        "Expected a token of type 'lpar, received 'number instead"
+        (dlang/operator-app lxr)))))
+
+(def-test "dlang/operator-app should error when second paren missing"
+  (call-with-input-string "(1.0 * 2.0"
+    (lambda (input)
+      (define lxr (make-lexer input))
+      (check-exception "Expected a token of type 'rpar, received EOF instead"
+        (dlang/operator-app lxr)))))
+
+(def-test "dlang/operator-app should error operator is not an id"
+  (call-with-input-string "(1.0 2.0 3.0)"
+    (lambda (input)
+      (define lxr (make-lexer input))
+      (check-exception "Expected a token of type 'id, received 'number instead"
+        (dlang/operator-app lxr)))))
+
 ; dlang/operator
 ;------------------------------------------------------------------------------
 (def-test "dlang/operator should parse an Id"
@@ -405,6 +427,27 @@
             (syntree 'number "1.0" '())
             (syntree 'symbol "$c" '())))))))
 
+(def-test "dlang/arg-list should error when first paren missing"
+  (call-with-input-string ")"
+    (lambda (input)
+      (define lxr (make-lexer input))
+      (check-exception "Expected a token of type 'lpar, received 'rpar instead"
+        (dlang/arg-list lxr)))))
+
+(def-test "dlang/arg-list should error when second paren missing"
+  (call-with-input-string "("
+    (lambda (input)
+      (define lxr (make-lexer input))
+      (check-exception "Expected a literal"
+        (dlang/arg-list lxr)))))
+
+(def-test "dlang/arg-list should error when comma missing between args"
+  (call-with-input-string "(a b)"
+    (lambda (input)
+      (define lxr (make-lexer input))
+      (check-exception "Expected a token of type 'comma, received 'id instead"
+        (dlang/arg-list lxr)))))
+
 ; dlang/arg-list?
 ;------------------------------------------------------------------------------
 (def-test "dlang/arg-list? should return true if input contains an arg list"
@@ -517,3 +560,11 @@
           (list
             (syntree 'number "1.0" '())
             (syntree 'number "2.0" '())))))))
+
+(def-test "dlang/expr-block should error when no terminator found"
+  (call-with-input-string "1.0 2.0"
+    (lambda (input)
+      (define lxr (make-lexer input))
+      (check-exception "Expected a literal"
+        (dlang/expr-block lxr 'term)))))
+
