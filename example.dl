@@ -1,4 +1,4 @@
-# Literals
+## Literals
 "foo"
 'a'
 1.0
@@ -19,12 +19,14 @@ foo(1, 2, 3)
 
 # Definition and assignment
 def foo 5 ;
-set foo 6 ;
+set! foo 6 ;
 def foo 5 end
-set foo 6 end
+set! foo 6 end
 
-# Special function definition shorthand
-def max(a, b) if (a > b) a else b ;;
+# Special function definition shorthand (not yet supported)
+#def max(a, b)
+#   if (a > b) a b;
+#end
 
 # If statement
 if conditional
@@ -54,20 +56,17 @@ func (a) foo(a) ;
 func (a, b) foo(a, b) ;
 func (a, b, c) foo(a, b, c) ;
 
-# Macro expressions
-macro () ;
-macro (a) ;
-macro (a, b) ;
-macro (a, b, c) ;
-macro () foo(a) ;
-macro (a) foo(a) ;
-macro (a, b) foo(a, b) ;
-macro (a, b, c) foo(a, b, c) ;
+## Macro expressions (not yet supported)
+#macro () ;
+#macro (a) ;
+#macro (a, b) ;
+#macro (a, b, c) ;
+#macro () foo(a) ;
+#macro (a) foo(a) ;
+#macro (a, b) foo(a, b) ;
+#macro (a, b, c) foo(a, b, c) ;
 
-# Quoting Expressions
-#quote( (1 + 1) )
-
-# Syntactic Extensions
+# Syntactic Extensions (not yet supported)
 #syntax let ( := = ) ;
 #    ( a := b )
 #        define a b ;
@@ -75,6 +74,6 @@ macro (a, b, c) foo(a, b, c) ;
 #    ( a = b )
 #        set! a b ;
 #end
-
+#
 #let foo := "bar" ;
 #let foo = 5 ;
