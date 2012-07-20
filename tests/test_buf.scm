@@ -106,13 +106,15 @@
   (define buffer (buf (current-input-port) (lambda () '())))
   (buf-marks-set! buffer '(0 1))
   (buf-release! buffer)
-  (equal? '(1) (buf-marks buffer)))
+  (and (equal? '(1) (buf-marks buffer))
+       (equal? 0    (buf-pos buffer))))
 
 (def-test "buf-release! should remove the current mark from the marks list when multiple marks exist"
   (define buffer (buf (current-input-port) (lambda () '())))
   (buf-marks-set! buffer '(0 1 2))
   (buf-release! buffer)
-  (equal? '(1 2) (buf-marks buffer)))
+  (and (equal? '(1 2) (buf-marks buffer))
+       (equal? 0    (buf-pos buffer))))
 
 ; buf-advance!
 ;------------------------------------------------------------------------------

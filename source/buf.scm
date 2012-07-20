@@ -25,6 +25,7 @@
   (buf-marks-set! b (cons (buf-pos b) (buf-marks b))))
 
 (define (buf-release! b)
+  (buf-pos-set! b (car (buf-marks b)))
   (buf-marks-set! b (cdr (buf-marks b))))
 
 (define (buf-advance! b)

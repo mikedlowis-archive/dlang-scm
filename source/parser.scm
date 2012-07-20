@@ -31,13 +31,17 @@
 (define (dlang/program in)
   (define result '())
   (while (not (eof-object? (buf-lookahead! in 1)))
-    (append result (list (dlang/expression in)))))
+    (set! result (append result (list (dlang/expression in)))))
+  result)
 
 (define (dlang/expression in)
   (if (dlang/core-form? in)
     (dlang/core-form in)
     (let ((result (dlang/basic-expr in)))
-      (if (dlang/arg-list? in) (dlang/arg-list? in result) result))))
+      (if (dlang/arg-list? in)
+        (syntree 'apply ""
+          (append (list result) (syntree-children (dlang/arg-list in))))
+        result))))
 
 (define (dlang/core-form in)
   (define tok (buf-lookahead! in 1))

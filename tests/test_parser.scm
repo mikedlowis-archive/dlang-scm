@@ -9,9 +9,61 @@
 
 ; dlang/program
 ;------------------------------------------------------------------------------
+(def-test "dlang/program should parse an empty program"
+  (call-with-input-string ""
+    (lambda (input)
+      (define lxr (make-lexer input))
+      (define result (dlang/program lxr))
+      (equal? result '()))))
+
+(def-test "dlang/program should parse a program with one expression"
+  (call-with-input-string "abc"
+    (lambda (input)
+      (define lxr (make-lexer input))
+      (define result (dlang/program lxr))
+      (equal? result (list (syntree 'id "abc" '()))))))
+
+(def-test "dlang/program should parse a program with two expressions"
+  (call-with-input-string "abc 1.0"
+    (lambda (input)
+      (define lxr (make-lexer input))
+      (define result (dlang/program lxr))
+      (equal? result
+        (list
+          (syntree 'id "abc" '())
+          (syntree 'number "1.0" '()))))))
 
 ; dlang/expression
 ;------------------------------------------------------------------------------
+(def-test "dlang/expression should parse a core form"
+  (call-with-input-string "def foo 1.0;"
+    (lambda (input)
+      (define lxr (make-lexer input))
+      (define result (dlang/expression lxr))
+      (syntree=? result
+        (syntree 'define ""
+          (list
+            (syntree 'id "foo" '())
+            (syntree 'number "1.0" '())))))))
+
+(def-test "dlang/expression should parse a literal"
+  (call-with-input-string "abc"
+    (lambda (input)
+      (define lxr (make-lexer input))
+      (define result (dlang/expression lxr))
+      (syntree=? result (syntree 'id "abc" '())))))
+
+(def-test "dlang/expression should parse a function application"
+  (call-with-input-string "abc(1.0,2.0)"
+    (lambda (input)
+      (define lxr (make-lexer input))
+      (define result (dlang/expression lxr))
+      (syntree=? result
+        (syntree 'apply ""
+          (list
+            (syntree 'id "abc" '())
+            (syntree 'number "1.0" '())
+            (syntree 'number "2.0" '())))))))
 
 ; dlang/core-form
 ;------------------------------------------------------------------------------
@@ -118,6 +170,20 @@
             (syntree 'id "foo" '())
             (syntree 'number "1.0" '())))))))
 
+(def-test "dlang/define should error when no terminator found"
+  (call-with-input-string "def foo 1.0"
+    (lambda (input)
+      (define lxr (make-lexer input))
+      (check-exception "Expected a token of type 'term, received EOF instead"
+        (dlang/define lxr)))))
+
+(def-test "dlang/define should error when variable name not an id"
+  (call-with-input-string "def 1.0 1.0;"
+    (lambda (input)
+      (define lxr (make-lexer input))
+      (check-exception "Expected a token of type 'id, received 'number instead"
+        (dlang/define lxr)))))
+
 ; dlang/assign
 ;------------------------------------------------------------------------------
 (def-test "dlang/assign should parse a variable assignment"
@@ -130,6 +196,20 @@
           (list
             (syntree 'id "foo" '())
             (syntree 'number "1.0" '())))))))
+
+(def-test "dlang/define should error when no terminator found"
+  (call-with-input-string "set! foo 1.0"
+    (lambda (input)
+      (define lxr (make-lexer input))
+      (check-exception "Expected a token of type 'term, received EOF instead"
+        (dlang/assign lxr)))))
+
+(def-test "dlang/define should error when variable name not an id"
+  (call-with-input-string "set! 1.0 1.0;"
+    (lambda (input)
+      (define lxr (make-lexer input))
+      (check-exception "Expected a token of type 'id, received 'number instead"
+        (dlang/assign lxr)))))
 
 ; dlang/if
 ;------------------------------------------------------------------------------
@@ -155,6 +235,34 @@
             (syntree 'id "cond" '())
             (syntree 'id "result1" '())
             (syntree 'id "result2" '())))))))
+
+(def-test "dlang/if should error if term received instead of condition"
+  (call-with-input-string "if;"
+    (lambda (input)
+      (define lxr (make-lexer input))
+      (check-exception "Expected a literal"
+        (dlang/if lxr)))))
+
+(def-test "dlang/if should error if EOF received instead of condition"
+  (call-with-input-string "if"
+    (lambda (input)
+      (define lxr (make-lexer input))
+      (check-exception "Expected a literal"
+        (dlang/if lxr)))))
+
+(def-test "dlang/if should error if term received instead of expression"
+  (call-with-input-string "if 1.0;"
+    (lambda (input)
+      (define lxr (make-lexer input))
+      (check-exception "Expected a literal"
+        (dlang/if lxr)))))
+
+(def-test "dlang/if should error if EOF received instead of expression"
+  (call-with-input-string "if 1.0"
+    (lambda (input)
+      (define lxr (make-lexer input))
+      (check-exception "Expected a literal"
+        (dlang/if lxr)))))
 
 ; dlang/begin
 ;------------------------------------------------------------------------------
@@ -186,6 +294,13 @@
           (list
             (syntree 'id "stm1" '())
             (syntree 'id "stm2" '())))))))
+
+(def-test "dlang/begin should error if EOF received instead of term"
+  (call-with-input-string "begin 1.0"
+    (lambda (input)
+      (define lxr (make-lexer input))
+      (check-exception "Expected a literal"
+        (dlang/begin lxr)))))
 
 ; dlang/func
 ;------------------------------------------------------------------------------
@@ -254,6 +369,27 @@
                 (syntree 'id "a" '())
                 (syntree 'id "b" '())))
             (syntree 'block "" '())))))))
+
+(def-test "dlang/func should error if no opening paren on arg list"
+  (call-with-input-string "func);"
+    (lambda (input)
+      (define lxr (make-lexer input))
+      (check-exception "Expected a token of type 'lpar, received 'rpar instead"
+        (dlang/func lxr)))))
+
+(def-test "dlang/func should error if no closing paren on arg list"
+  (call-with-input-string "func(;"
+    (lambda (input)
+      (define lxr (make-lexer input))
+      (check-exception "Expected a token of type 'id, received 'term instead"
+        (dlang/func lxr)))))
+
+(def-test "dlang/func should error if no terminator"
+  (call-with-input-string "func()"
+    (lambda (input)
+      (define lxr (make-lexer input))
+      (check-exception "Expected a literal"
+        (dlang/func lxr)))))
 
 ; dlang/basic-expr
 ;------------------------------------------------------------------------------
