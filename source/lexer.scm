@@ -114,12 +114,16 @@
 
 (define (dlang/string in)
   (define text (string (char-match in #\")))
-  (while (and (not (eof-object? (buf-lookahead! in 1)))
-              (not (char=? #\newline (buf-lookahead! in 1)))
-              (not (char=? #\" (buf-lookahead! in 1))))
+  (while (dlang/string-char? in)
     (set! text (string-append text (string (buf-consume! in)))))
   (set! text (string-append text (string (char-match in #\"))))
   (token 'string text))
+
+(define (dlang/string-char? in)
+  (define ch (buf-lookahead! in 1))
+  (and (not (eof-object? ch))
+       (not (char=? #\newline ch))
+       (not (char=? #\" ch))))
 
 (define (dlang/symbol in)
   (token 'symbol
