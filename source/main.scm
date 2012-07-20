@@ -1,6 +1,4 @@
-(declare
-
-         (uses parser))
+(declare (uses parser))
 
 (define (parse-file fname)
   (define result
