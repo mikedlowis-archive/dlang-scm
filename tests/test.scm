@@ -1,12 +1,9 @@
-(declare (unit test)
-         (compile-syntax))
+(declare (unit test))
 
 (define unit-tests '())
 
 (define (register-test! test)
   (set! unit-tests (append unit-tests (list test))))
-
-;(define (error msg) msg)
 
 (define (print-summary pass fail)
   (if (zero? fail)

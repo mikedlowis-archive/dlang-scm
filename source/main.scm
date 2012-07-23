@@ -14,11 +14,11 @@
   (define program (parse-file fname))
   (with-output-to-file ofname
     (lambda () (map print program)))
-  (load ofname))
+  (load ofname)
+  (delete-file ofname))
 
 ; If we have a file, then parse it
 (if (= 1 (length (command-line-arguments)))
   (interpret-file (car (command-line-arguments)))
-  ;(map print (parse-file (car (command-line-arguments))))
   (print "No input file provided."))
 

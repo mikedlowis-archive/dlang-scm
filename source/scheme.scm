@@ -1,4 +1,8 @@
-(declare (unit scheme) (uses parse-utils))
+(declare (unit scheme) (uses parse-utils extras))
+
+(define (obj->string obj)
+  (with-output-to-string
+    (lambda () (display obj))))
 
 (define (scheme-program lst)
   (if (null? lst) '()
@@ -26,7 +30,7 @@
   (syntree-text expr))
 
 (define (scheme-character expr)
-  (string-ref (syntree-text expr) 1))
+  (string-append "#\\" (string (string-ref (syntree-text expr) 1))))
 
 (define (scheme-number expr)
   (syntree-text expr))
@@ -40,17 +44,17 @@
 (define (scheme-define expr)
   (string-append
     "(define "
-    (scheme-expression (list-ref (syntree-children expr) 0))
+    (obj->string (scheme-expression (list-ref (syntree-children expr) 0)))
     " "
-    (scheme-expression (list-ref (syntree-children expr) 1))
+    (obj->string (scheme-expression (list-ref (syntree-children expr) 1)))
     ")"))
 
 (define (scheme-assign expr)
   (string-append
     "(set! "
-    (scheme-expression (list-ref (syntree-children expr) 0))
+    (obj->string (scheme-expression (list-ref (syntree-children expr) 0)))
     " "
-    (scheme-expression (list-ref (syntree-children expr) 1))
+    (obj->string (scheme-expression (list-ref (syntree-children expr) 1)))
     ")"))
 
 (define (scheme-if expr)
@@ -73,5 +77,7 @@
   (list (map scheme-expression (syntree-children expr))))
 
 (define (scheme-block expr)
-  (map scheme-expression (syntree-children expr)))
+  (if (null? (syntree-children expr))
+    '('())
+    (map scheme-expression (syntree-children expr))))
 
