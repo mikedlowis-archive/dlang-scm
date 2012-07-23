@@ -10,7 +10,7 @@
 # Utility Function Definitions
 #-----------------------------
 # Function for generating an file list
-flist = $(shell env find $(1) -name *.$(strip $(2)) -print)
+flist = $(shell env find $(1) -name "*.$(strip $(2))" -print)
 
 # Project and Artifact Names
 #---------------------------
