@@ -21,8 +21,7 @@ Requirements For Building
 ----------------------------------------------
 
 * The Chicken Scheme Compiler
-* The vector-lib egg for Chicken Scheme
-* A C compiler (Tested with GCC)
+* A C compiler (Tested with GCC and MinGW)
 
 Build Instructions
 ----------------------------------------------
@@ -35,7 +34,7 @@ You can build just the release binaries with the following command:
 
     make release
 
-You can execute just the unit tests with the following command:
+You can build and execute just the unit tests with the following command:
 
     make test
 
