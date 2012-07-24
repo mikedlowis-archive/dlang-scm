@@ -1,7 +1,4 @@
-(declare (unit buf)
-         (uses library))
-
-(require-extension vector-lib)
+(declare (unit buf) (uses library))
 
 (define-record buf
   src ldfn pos marks data)
@@ -17,6 +14,10 @@
        (integer?  (buf-pos obj))
        (list?     (buf-marks obj))
        (vector?   (buf-data obj))))
+
+(define (vector-append v1 v2 . vN)
+  (define new-vec (list->vector (append (vector->list v1) (vector->list v2))))
+  (if (null? vN) new-vec (vector-append new-vec (car vN) (cdr vN))))
 
 (define (buf-marked? b)
   (> (length (buf-marks b)) 0))

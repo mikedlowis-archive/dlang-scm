@@ -42,7 +42,7 @@ TEST_INCS = -I inc
 # Compiler and Linker Options
 #----------------------------
 CSC = csc
-CSCFLAGS = -c -w
+CSCFLAGS = -c -explicit-use
 
 # Build Rules
 #------------
