@@ -1,6 +1,4 @@
-(include "loop.scm")
-(declare (unit parser)
-         (uses buf))
+(declare (unit parser) (uses buf))
 
 ;------------------------------------------------------------------------------
 ; Formal EBNF Syntax:
@@ -29,10 +27,10 @@
 ;------------------------------------------------------------------------------
 
 (define (dlang/program in)
-  (define result '())
-  (while (not (eof-object? (buf-lookahead! in 1)))
-    (set! result (append result (list (dlang/expression in)))))
-  result)
+  (collect in dlang/has-expression? dlang/expression '()))
+
+(define (dlang/has-expression? in)
+  (not (eof-object? (buf-lookahead! in 1))))
 
 (define (dlang/expression in)
   (if (dlang/core-form? in)
@@ -144,44 +142,41 @@
 
 (define (dlang/arg-list in)
   (define tree (syntree 'arglist "" '()))
-  (define chldrn '())
   (token-match in 'lpar)
-  (if (not (token-matches? in 'rpar))
-    (begin
-      (set! chldrn
-        (append chldrn (list (dlang/expression in))))
-      (while (not (token-matches? in 'rpar))
-        (token-match in 'comma)
-        (set! chldrn
-          (append chldrn (list (dlang/expression in)))))))
+  (syntree-children-set! tree
+    (collect in dlang/list-end? dlang/arg-list-item '()))
   (token-match in 'rpar)
-  (syntree-children-set! tree chldrn)
   tree)
+
+(define (dlang/arg-list-item in)
+  (define itm (dlang/expression in))
+  (if (dlang/list-end? in) (token-match in 'comma))
+  itm)
 
 (define (dlang/arg-list? in)
   (test-apply dlang/arg-list in))
 
 (define (dlang/id-list in)
   (define tree (syntree 'args "" '()))
-  (define chldrn '())
   (token-match in 'lpar)
-  (if (not (token-matches? in 'rpar))
-    (begin
-      (set! chldrn
-        (append chldrn (list (token->syntree (token-match in 'id)))))
-      (while (not (token-matches? in 'rpar))
-        (token-match in 'comma)
-        (set! chldrn
-          (append chldrn (list (token->syntree (token-match in 'id))))))))
+  (syntree-children-set! tree
+    (collect in dlang/list-end? dlang/id-list-item '()))
   (token-match in 'rpar)
-  (syntree-children-set! tree chldrn)
   tree)
 
+(define (dlang/id-list-item in)
+  (define itm (token->syntree (token-match in 'id)))
+  (if (dlang/list-end? in) (token-match in 'comma))
+  itm)
+
+(define (dlang/list-end? in)
+  (not (token-matches? in 'rpar)))
+
 (define (dlang/expr-block in term)
-  (define tree (syntree 'block "" '()))
-  (define chldrn '())
-  (while (not (token-matches? in term))
-    (set! chldrn (append chldrn (list (dlang/expression in)))))
-  (syntree-children-set! tree chldrn)
-  tree)
+  (syntree 'block ""
+    (collect
+      in
+      (lambda (buf) (not (token-matches? buf term)))
+      dlang/expression
+      '() )))
 
