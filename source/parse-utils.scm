@@ -26,6 +26,18 @@
         (syntree=? (car ch1) (car ch2))
         (syntree-children=? (cdr ch1) (cdr ch2))))))
 
+(define-record charport port line column)
+(define (charport port) (make-charport port 0 0))
+
+(define (charport-read chprt)
+  (define ch (read-char (charport-port chprt)))
+  (if (char=? ch #\newline)
+    (begin
+      (charport-line-set! chprt (+ 1 (charport-line chprt)))
+      (charport-column-set! chprt 0))
+    (charport-column-set! chprt (+ 1 (charport-column chprt))))
+  ch)
+
 (define (char-match buf expect)
   (define actual (buf-lookahead! buf 1))
   (if (eof-object? actual)
