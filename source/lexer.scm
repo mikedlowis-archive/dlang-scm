@@ -1,7 +1,4 @@
-(include "loop.scm")
-(declare (unit lexer)
-         (uses parse-utils)
-         (uses buf))
+(declare (unit lexer) (uses parse-utils))
 
 (define (dlang/lexer input)
   (buf (buf input read-char) dlang/tokenize))
@@ -55,16 +52,20 @@
     tok))
 
 (define (dlang/whitespace in)
-  (while (char-whitespace? (buf-lookahead! in 1))
-    (buf-consume! in))
+  (consume-all in dlang/whitespace?)
   (dlang/tokenize in))
+
+(define (dlang/whitespace? in)
+  (char-whitespace? (buf-lookahead! in 1)))
 
 (define (dlang/comment in)
   (char-match in #\#)
-  (while (and (not (char=? (buf-lookahead! in 1) #\newline))
-              (not (eof-object? (buf-lookahead! in 1))))
-    (buf-consume! in))
+  (consume-all in dlang/comment?)
   (dlang/tokenize in))
+
+(define (dlang/comment? in)
+  (and (not (char=? (buf-lookahead! in 1) #\newline))
+       (not (eof-object? (buf-lookahead! in 1)))))
 
 (define (dlang/number in)
   (token 'number
@@ -79,14 +80,14 @@
         (dlang/exponent in) ""))))
 
 (define (dlang/integer in)
-  (define text "")
   (if (and
         (not (eof-object? (buf-lookahead! in 1)))
         (char-numeric? (buf-lookahead! in 1)))
-    (while (char-numeric? (buf-lookahead! in 1))
-      (set! text (string-append text (string (buf-consume! in)))))
-    (abort "Expected an integer"))
-  text)
+    (collect-char in dlang/integer? "")
+    (abort "Expected an integer")))
+
+(define (dlang/integer? in)
+  (char-numeric? (buf-lookahead! in 1)))
 
 (define (dlang/decimal in)
   (string-append
@@ -95,7 +96,6 @@
 
 (define (dlang/exponent in)
   (string-append
-    ;(string (char-match-one-of in "eE"))
     (string
       (if (char=? (buf-lookahead! in 1) #\e)
         (char-match in #\e) (char-match in #\E)))
@@ -113,10 +113,11 @@
       (string (char-match in #\')) )))
 
 (define (dlang/string in)
-  (define text (string (char-match in #\")))
-  (while (dlang/string-char? in)
-    (set! text (string-append text (string (buf-consume! in)))))
-  (set! text (string-append text (string (char-match in #\"))))
+  (define text
+    (string-append
+      (string (char-match in #\"))
+      (collect-char in dlang/string-char? "")
+      (string (char-match in #\"))))
   (token 'string text))
 
 (define (dlang/string-char? in)
@@ -132,11 +133,9 @@
       (token-text (dlang/id in)))))
 
 (define (dlang/id in)
-  (define acc "")
-  (while (dlang/id-char? in)
-    (set! acc (string-append acc (string (buf-consume! in)))))
-  (if (> (string-length acc) 0)
-    (token 'id acc)
+  (define str(collect-char in dlang/id-char? ""))
+  (if (> (string-length str) 0)
+    (token 'id str)
     (abort "An Id was expected but none found.")))
 
 (define (dlang/id-char? in)
