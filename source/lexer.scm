@@ -1,7 +1,10 @@
 (declare (unit lexer) (uses parse-utils))
 
 (define (dlang/lexer input)
-  (buf (buf (charport input) charport-read) dlang/tokenize))
+  (buf (dlang/char-buf input) dlang/tokenize))
+
+(define (dlang/char-buf input)
+  (buf (charport input) charport-read))
 
 (define (dlang/tokenize in)
   (let ((ch (buf-lookahead! in 1)))
