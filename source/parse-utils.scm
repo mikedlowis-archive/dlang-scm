@@ -25,12 +25,14 @@
 (define (char-match buf expect)
   (define actual (buf-lookahead! buf 1))
   (if (eof-object? actual)
-    (abort (string-append "Expected '" (string expect) "', received EOF instead"))
+    (abort
+      (string-append "Expected '" (string expect) "', received EOF instead"))
     (if (equal? expect actual)
       (buf-consume! buf)
       (abort
         (string-append
-          "Expected '" (string expect) "', received '" (string actual) "' instead"))))
+          "Expected '" (string expect)
+          "', received '" (string actual) "' instead"))))
   actual)
 
 (define (token-match buf expect)
