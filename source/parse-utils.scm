@@ -3,6 +3,10 @@
 (define-record token type text)
 (define token make-token)
 
+(define (token=? tok1 tok2)
+  (and (equal? (token-type tok1) (token-type tok2))
+       (equal? (token-text tok1) (token-text tok2))))
+
 (define-record syntree type text children)
 (define syntree make-syntree)
 
