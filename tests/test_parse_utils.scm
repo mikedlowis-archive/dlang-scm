@@ -128,6 +128,23 @@
 
 ; token-matches?
 ;------------------------------------------------------------------------------
+(def-test "token-matches? should return true if next token matches type"
+  (call-with-input-string "abc"
+    (lambda (input)
+      (define buffer (dlang/lexer input))
+      (token-matches? buffer 'id))))
+
+(def-test "token-matches? should return false if next token does not match type"
+  (call-with-input-string "ab"
+    (lambda (input)
+      (define buffer (dlang/lexer input))
+      (not (token-matches? buffer 'foo)))))
+
+(def-test "token-matches? should return false if EOF"
+  (call-with-input-string ""
+    (lambda (input)
+      (define buffer (dlang/lexer input))
+      (not (token-matches? buffer 'foo)))))
 
 ; keyword-match
 ;------------------------------------------------------------------------------
