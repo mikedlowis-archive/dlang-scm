@@ -83,17 +83,16 @@
   (buf-release! buf)
   (not (null? result)))
 
-(define (collect-char in fn str)
-  (if (fn in)
-    (collect-char in fn (string-append str (string (buf-consume! in))))
-    str))
+(define (collect-char in predfn)
+  (list->string (collect in predfn buf-consume!)))
 
-(define (consume-all in fn)
-  (when (fn in)
+(define (consume-all in predfn)
+  (when (predfn in)
     (buf-consume! in)
-    (consume-all in fn)))
+    (consume-all in predfn)))
 
-(define (collect in fn rulefn lst)
+(define (collect in fn rulefn)
   (if (fn in)
-    (collect in fn rulefn (append lst (list (rulefn in))))
-    lst))
+    (cons (rulefn in) (collect in fn rulefn))
+    '()))
+

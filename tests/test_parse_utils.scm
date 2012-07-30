@@ -148,6 +148,9 @@
 
 ; keyword-match
 ;------------------------------------------------------------------------------
+;(def-test "keyword-match should consume and return if next token matches"
+;(def-test "keyword-match should error if next token not an id"
+;(def-test "keyword-match should error if next token does not match"
 
 ; token->syntree
 ;------------------------------------------------------------------------------
@@ -158,13 +161,20 @@
 
 ; test-apply
 ;------------------------------------------------------------------------------
+;(def-test "test-apply should return true if the input matches the applied rule"
+;(def-test "test-apply should return false if the applied rule fails"
 
 ; collect-char
 ;------------------------------------------------------------------------------
+;(def-test "should return empty string if predicate function returns false"
+;(def-test "should return string containing chars from buffer when predicate returns true"
 
 ; consume-all
 ;------------------------------------------------------------------------------
+;(def-test "should consume nothing if predicate never returns true"
+;(def-test "should an item at a time until predicate returns false"
 
 ; collect
 ;------------------------------------------------------------------------------
-
+;(def-test "should return empty list if predicate never returns true"
+;(def-test "should return list of items for which predicate returned false"
