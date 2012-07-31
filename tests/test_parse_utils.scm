@@ -148,9 +148,34 @@
 
 ; keyword-match
 ;------------------------------------------------------------------------------
-;(def-test "keyword-match should consume and return if next token matches"
-;(def-test "keyword-match should error if next token not an id"
-;(def-test "keyword-match should error if next token does not match"
+(def-test "keyword-match should consume and return if next token matches"
+  (call-with-input-string "abc"
+    (lambda (input)
+      (define buffer (dlang/lexer input))
+      (token=?
+        (keyword-match buffer "abc")
+        (token 'id "abc")))))
+
+(def-test "keyword-match should error if next token not an id"
+  (call-with-input-string "1.0"
+    (lambda (input)
+      (define buffer (dlang/lexer input))
+      (check-exception "Expected 'abc', received '1.0' instead"
+        (keyword-match buffer "abc")))))
+
+(def-test "keyword-match should error if next token does not match"
+  (call-with-input-string "ab"
+    (lambda (input)
+      (define buffer (dlang/lexer input))
+      (check-exception "Expected 'abc', received 'ab' instead"
+        (keyword-match buffer "abc")))))
+
+(def-test "keyword-match should error if EOF"
+  (call-with-input-string ""
+    (lambda (input)
+      (define buffer (dlang/lexer input))
+      (check-exception "Expected 'abc', received EOF instead"
+        (keyword-match buffer "abc")))))
 
 ; token->syntree
 ;------------------------------------------------------------------------------
@@ -161,20 +186,65 @@
 
 ; test-apply
 ;------------------------------------------------------------------------------
-;(def-test "test-apply should return true if the input matches the applied rule"
-;(def-test "test-apply should return false if the applied rule fails"
+(def-test "test-apply should return true if the input matches the applied rule"
+  (call-with-input-string "abc"
+    (lambda (input)
+      (define buffer (dlang/lexer input))
+      (test-apply dlang/expression buffer))))
+
+(def-test "test-apply should return false if the applied rule fails"
+  (call-with-input-string "abc"
+    (lambda (input)
+      (define buffer (dlang/lexer input))
+      (not (test-apply dlang/arg-list buffer)))))
 
 ; collect-char
 ;------------------------------------------------------------------------------
-;(def-test "should return empty string if predicate function returns false"
-;(def-test "should return string containing chars from buffer when predicate returns true"
+(def-test "should return empty string if predicate function returns false"
+  (call-with-input-string "abc"
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (equal? "" (collect-char buffer dlang/integer?)))))
+
+(def-test "should return empty string if predicate function returns false due to EOF"
+  (call-with-input-string ""
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (equal? "" (collect-char buffer dlang/integer?)))))
+
+(def-test "should return string containing chars from buffer when predicate returns true"
+  (call-with-input-string "123"
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (equal? "123" (collect-char buffer dlang/integer?)))))
 
 ; consume-all
 ;------------------------------------------------------------------------------
-;(def-test "should consume nothing if predicate never returns true"
-;(def-test "should an item at a time until predicate returns false"
+(def-test "should consume nothing if predicate never returns true"
+  (call-with-input-string "abc"
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (consume-all buffer dlang/integer?)
+      (equal? #\a (buf-lookahead! buffer 1)))))
+
+(def-test "should consume an item at a time until predicate returns false"
+  (call-with-input-string "123a"
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (consume-all buffer dlang/integer?)
+      (equal? #\a (buf-lookahead! buffer 1)))))
 
 ; collect
 ;------------------------------------------------------------------------------
-;(def-test "should return empty list if predicate never returns true"
-;(def-test "should return list of items for which predicate returned false"
+(def-test "should return empty list if predicate never returns true"
+  (call-with-input-string "abc"
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (equal? '() (collect buffer dlang/integer? buf-consume!)))))
+
+(def-test "should return list of items for which predicate returned true"
+  (call-with-input-string "123"
+    (lambda (input)
+      (define buffer (buf input read-char))
+      (equal? '(#\1 #\2 #\3) (collect buffer dlang/integer? buf-consume!)))))
+

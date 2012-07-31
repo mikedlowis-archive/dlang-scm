@@ -66,7 +66,10 @@
     (buf-consume! buf)
     (abort
       (string-append
-        "Expected '" expect "', received '" (token-text actual) "' instead"))))
+        "Expected '" expect "', received "
+        (if (eof-object? actual)
+          "EOF"
+          (string-append "'" (token-text actual) "'")) " instead"))))
 
 (define (token->syntree tok)
   (syntree (token-type tok) (token-text tok) '()))
