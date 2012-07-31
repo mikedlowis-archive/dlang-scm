@@ -83,7 +83,7 @@
   (if (and
         (not (eof-object? (buf-lookahead! in 1)))
         (char-numeric? (buf-lookahead! in 1)))
-    (collect-char in dlang/integer? "")
+    (collect-char in dlang/integer?)
     (abort "Expected an integer")))
 
 (define (dlang/integer? in)
@@ -116,7 +116,7 @@
   (define text
     (string-append
       (string (char-match in #\"))
-      (collect-char in dlang/string-char? "")
+      (collect-char in dlang/string-char?)
       (string (char-match in #\"))))
   (token 'string text))
 
@@ -133,7 +133,7 @@
       (token-text (dlang/id in)))))
 
 (define (dlang/id in)
-  (define str(collect-char in dlang/id-char? ""))
+  (define str(collect-char in dlang/id-char?))
   (if (> (string-length str) 0)
     (token 'id str)
     (abort "An Id was expected but none found.")))

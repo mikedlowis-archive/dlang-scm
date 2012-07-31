@@ -3,6 +3,10 @@
 (define-record token type text)
 (define token make-token)
 
+(define (token=? tok1 tok2)
+  (and (equal? (token-type tok1) (token-type tok2))
+       (equal? (token-text tok1) (token-text tok2))))
+
 (define-record syntree type text children)
 (define syntree make-syntree)
 
@@ -25,12 +29,14 @@
 (define (char-match buf expect)
   (define actual (buf-lookahead! buf 1))
   (if (eof-object? actual)
-    (abort (string-append "Expected '" (string expect) "', received EOF instead"))
+    (abort
+      (string-append "Expected '" (string expect) "', received EOF instead"))
     (if (equal? expect actual)
       (buf-consume! buf)
       (abort
         (string-append
-          "Expected '" (string expect) "', received '" (string actual) "' instead"))))
+          "Expected '" (string expect)
+          "', received '" (string actual) "' instead"))))
   actual)
 
 (define (token-match buf expect)
@@ -60,7 +66,10 @@
     (buf-consume! buf)
     (abort
       (string-append
-        "Expected '" expect "', received '" (token-text actual) "' instead"))))
+        "Expected '" expect "', received "
+        (if (eof-object? actual)
+          "EOF"
+          (string-append "'" (token-text actual) "'")) " instead"))))
 
 (define (token->syntree tok)
   (syntree (token-type tok) (token-text tok) '()))
@@ -77,17 +86,16 @@
   (buf-release! buf)
   (not (null? result)))
 
-(define (collect-char in fn str)
-  (if (fn in)
-    (collect-char in fn (string-append str (string (buf-consume! in))))
-    str))
+(define (collect-char in predfn)
+  (list->string (collect in predfn buf-consume!)))
 
-(define (consume-all in fn)
-  (when (fn in)
+(define (consume-all in predfn)
+  (when (predfn in)
     (buf-consume! in)
-    (consume-all in fn)))
+    (consume-all in predfn)))
 
-(define (collect in fn rulefn lst)
+(define (collect in fn rulefn)
   (if (fn in)
-    (collect in fn rulefn (append lst (list (rulefn in))))
-    lst))
+    (cons (rulefn in) (collect in fn rulefn))
+    '()))
+

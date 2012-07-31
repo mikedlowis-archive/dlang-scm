@@ -27,7 +27,7 @@
 ;------------------------------------------------------------------------------
 
 (define (dlang/program in)
-  (collect in dlang/has-expression? dlang/expression '()))
+  (collect in dlang/has-expression? dlang/expression))
 
 (define (dlang/has-expression? in)
   (not (eof-object? (buf-lookahead! in 1))))
@@ -144,7 +144,7 @@
   (define tree (syntree 'arglist "" '()))
   (token-match in 'lpar)
   (syntree-children-set! tree
-    (collect in dlang/list-end? dlang/arg-list-item '()))
+    (collect in dlang/list-end? dlang/arg-list-item))
   (token-match in 'rpar)
   tree)
 
@@ -160,7 +160,7 @@
   (define tree (syntree 'args "" '()))
   (token-match in 'lpar)
   (syntree-children-set! tree
-    (collect in dlang/list-end? dlang/id-list-item '()))
+    (collect in dlang/list-end? dlang/id-list-item))
   (token-match in 'rpar)
   tree)
 
@@ -177,6 +177,5 @@
     (collect
       in
       (lambda (buf) (not (token-matches? buf term)))
-      dlang/expression
-      '() )))
+      dlang/expression)))
 
