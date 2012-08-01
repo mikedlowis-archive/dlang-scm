@@ -12,9 +12,15 @@
 (define-record posdata name line column)
 (define posdata make-posdata)
 
+(define (posdata=? pd1 pd2)
+  (and (equal? (posdata-name pd1)   (posdata-name pd2))
+       (equal? (posdata-line pd1)   (posdata-line pd2))
+       (equal? (posdata-column pd1) (posdata-column pd2))))
+
 (define (token=? tok1 tok2)
   (and (equal? (token-type tok1) (token-type tok2))
-       (equal? (token-text tok1) (token-text tok2))))
+       (equal? (token-text tok1) (token-text tok2))
+       (posdata=? (token-pos tok1) (token-pos tok2))))
 
 (define (syntree=? tr1 tr2)
   (and (equal? (syntree-type tr1) (syntree-type tr2))
@@ -34,11 +40,13 @@
 
 (define (charport-read chprt)
   (define ch (read-char (charport-port chprt)))
-  (if (char=? ch #\newline)
-    (begin
+  (cond
+    ((eof-object? ch)) ; Do nothing for EOFs
+    ((char=? ch #\newline)
       (charport-line-set! chprt (+ 1 (charport-line chprt)))
       (charport-column-set! chprt 1))
-    (charport-column-set! chprt (+ 1 (charport-column chprt))))
+    (else
+      (charport-column-set! chprt (+ 1 (charport-column chprt)))))
   ch)
 
 (define (charport-posdata chprt)
