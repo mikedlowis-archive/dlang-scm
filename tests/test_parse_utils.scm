@@ -16,6 +16,30 @@
        (procedure? syntree-type)
        (procedure? syntree-children)))
 
+(def-test "functions for charport creation and usage should be created"
+  (and (procedure? make-charport)
+       (procedure? charport)
+       (procedure? charport-port)
+       (procedure? charport-line)
+       (procedure? charport-column)))
+
+(def-test "functions for posdata creation and usage should be created"
+  (and (procedure? make-syntree)
+       (procedure? posdata)
+       (procedure? posdata-name)
+       (procedure? posdata-line)
+       (procedure? posdata-column)))
+
+; charport
+;------------------------------------------------------------------------------
+(def-test "charport should initialize a charport properly"
+  (call-with-input-string "a"
+    (lambda (input)
+      (define port (charport input))
+      (and (equal? input (charport-port port))
+           (equal? 1 (charport-line port))
+           (equal? 1 (charport-column port))))))
+
 ; token=?
 ;------------------------------------------------------------------------------
 (def-test "token=? should return true if trees are equal"
@@ -79,16 +103,6 @@
       (list (syntree 'foo "" '()))
       (list (syntree 'bar "" '())))))
 
-; charport
-;------------------------------------------------------------------------------
-(def-test "charport should initialize a charport properly"
-  (call-with-input-string "a"
-    (lambda (input)
-      (define port (charport input))
-      (and (equal? input (charport-port port))
-           (equal? 1 (charport-line port))
-           (equal? 1 (charport-column port))))))
-
 ; charport-read
 ;------------------------------------------------------------------------------
 (def-test "charport-read should increment column when character is not newline"
@@ -106,6 +120,52 @@
       (and (equal? #\newline (charport-read port))
            (equal? 2 (charport-line port))
            (equal? 1 (charport-column port))))))
+
+; charport-pos
+;------------------------------------------------------------------------------
+(def-test "charport-pos should return psodata for given charport"
+  (call-with-input-string "a"
+    (lambda (input)
+      (define prt (charport input))
+      (define pos (charport-posdata prt))
+      (and (equal? "(string)" (posdata-name pos))
+           (equal? 1 (posdata-line pos))
+           (equal? 1 (posdata-column pos))))))
+
+; buf-posdata
+;------------------------------------------------------------------------------
+(def-test "buf-posdata should return posdata from charport"
+  (call-with-input-string ""
+    (lambda (input)
+      (define prt (charport input))
+      (define pos (buf-posdata prt))
+      (and (equal? "(string)" (posdata-name pos))
+           (equal? 1 (posdata-line pos))
+           (equal? 1 (posdata-column pos))))))
+
+(def-test "buf-posdata should return posdata from buf"
+  (call-with-input-string ""
+    (lambda (input)
+      (define prt (buf (charport input) charport-read))
+      (define pos (buf-posdata prt))
+      (and (equal? "(string)" (posdata-name pos))
+           (equal? 1 (posdata-line pos))
+           (equal? 1 (posdata-column pos))))))
+
+(def-test "buf-posdata should return posdata from multi layer buf"
+  (call-with-input-string ""
+    (lambda (input)
+      (define prt (buf (buf (charport input) charport-read) dlang/tokenize))
+      (define pos (buf-posdata prt))
+      (and (equal? "(string)" (posdata-name pos))
+           (equal? 1 (posdata-line pos))
+           (equal? 1 (posdata-column pos))))))
+
+(def-test "buf-posdata should error when an invalid object is encountered"
+  (call-with-input-string ""
+    (lambda (input)
+      (check-exception "Argument was not a buf or a charport"
+        (buf-posdata '())))))
 
 ; char-match
 ;------------------------------------------------------------------------------

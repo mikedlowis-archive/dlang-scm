@@ -3,12 +3,18 @@
 (define-record token type text)
 (define token make-token)
 
+(define-record syntree type text children)
+(define syntree make-syntree)
+
+(define-record charport port line column)
+(define (charport port) (make-charport port 1 1))
+
+(define-record posdata name line column)
+(define posdata make-posdata)
+
 (define (token=? tok1 tok2)
   (and (equal? (token-type tok1) (token-type tok2))
        (equal? (token-text tok1) (token-text tok2))))
-
-(define-record syntree type text children)
-(define syntree make-syntree)
 
 (define (syntree=? tr1 tr2)
   (and (equal? (syntree-type tr1) (syntree-type tr2))
@@ -26,9 +32,6 @@
         (syntree=? (car ch1) (car ch2))
         (syntree-children=? (cdr ch1) (cdr ch2))))))
 
-(define-record charport port line column)
-(define (charport port) (make-charport port 1 1))
-
 (define (charport-read chprt)
   (define ch (read-char (charport-port chprt)))
   (if (char=? ch #\newline)
@@ -37,6 +40,18 @@
       (charport-column-set! chprt 1))
     (charport-column-set! chprt (+ 1 (charport-column chprt))))
   ch)
+
+(define (charport-posdata chprt)
+  (posdata
+    (port-name (charport-port chprt))
+    (charport-line chprt)
+    (charport-column chprt)))
+
+(define (buf-posdata in)
+  (cond
+    ((buf? in)      (buf-posdata (buf-src in)))
+    ((charport? in) (charport-posdata in))
+    (else           (abort "Argument was not a buf or a charport"))))
 
 (define (char-match buf expect)
   (define actual (buf-lookahead! buf 1))
