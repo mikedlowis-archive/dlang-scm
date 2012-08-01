@@ -1,6 +1,6 @@
 (declare (unit parse-utils))
 
-(define-record token type text)
+(define-record token type text pos)
 (define token make-token)
 
 (define-record syntree type text children)

@@ -6,8 +6,9 @@
 (def-test "functions for token creation and usage should be created"
   (and (procedure? make-token)
        (procedure? token)
+       (procedure? token-type)
        (procedure? token-text)
-       (procedure? token-type)))
+       (procedure? token-pos)))
 
 (def-test "functions for syntree creation and usage should be created"
   (and (procedure? make-syntree)
@@ -44,20 +45,20 @@
 ;------------------------------------------------------------------------------
 (def-test "token=? should return true if trees are equal"
   (token=?
-    (token 'foo "")
-    (token 'foo "")))
+    (token 'foo "" (posdata "" 0 0))
+    (token 'foo "" (posdata "" 0 0))))
 
 (def-test "token=? should return false if types differ"
   (not
     (token=?
-      (token 'foo "")
-      (token 'bar ""))))
+      (token 'foo "" (posdata "" 0 0))
+      (token 'bar "" (posdata "" 0 0)))))
 
 (def-test "token=? should return false if text differs"
   (not
     (token=?
-      (token 'foo "a")
-      (token 'foo "b"))))
+      (token 'foo "a" (posdata "" 0 0))
+      (token 'foo "b" (posdata "" 0 0)))))
 
 ; syntree=?
 ;------------------------------------------------------------------------------
@@ -198,7 +199,7 @@
       (define buffer (dlang/lexer input))
       (token=?
         (token-match buffer 'id)
-        (token 'id "a")))))
+        (token 'id "a" (posdata "" 0 0))))))
 
 (def-test "token-match should error when EOF received"
   (call-with-input-string ""
@@ -242,7 +243,7 @@
       (define buffer (dlang/lexer input))
       (token=?
         (keyword-match buffer "abc")
-        (token 'id "abc")))))
+        (token 'id "abc" (posdata "" 0 0))))))
 
 (def-test "keyword-match should error if next token not an id"
   (call-with-input-string "1.0"
@@ -269,7 +270,7 @@
 ;------------------------------------------------------------------------------
 (def-test "token->syntree should convert a token to a syntree"
   (syntree=?
-    (token->syntree (token 'foo "bar"))
+    (token->syntree (token 'foo "bar" (posdata "" 0 0)))
     (syntree 'foo "bar" '())))
 
 ; test-apply

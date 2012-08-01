@@ -38,13 +38,13 @@
 
         ; Punctuation and Parens
         ((char=? ch #\()
-         (token 'lpar (string (buf-consume! in))))
+         (token 'lpar (string (buf-consume! in)) (buf-posdata in)))
         ((char=? ch #\))
-         (token 'rpar (string (buf-consume! in))))
+         (token 'rpar (string (buf-consume! in)) (buf-posdata in)))
         ((char=? ch #\,)
-         (token 'comma (string (buf-consume! in))))
+         (token 'comma (string (buf-consume! in)) (buf-posdata in)))
         ((char=? ch #\;)
-         (token 'term (string (buf-consume! in))))
+         (token 'term (string (buf-consume! in)) (buf-posdata in)))
 
         ; Id
         (else
@@ -80,7 +80,8 @@
         (dlang/decimal in) "")
       (if (or (char=? (buf-lookahead! in 1) #\e)
               (char=? (buf-lookahead! in 1) #\E))
-        (dlang/exponent in) ""))))
+        (dlang/exponent in) ""))
+    (buf-posdata in)))
 
 (define (dlang/integer in)
   (if (and
@@ -113,7 +114,8 @@
       (if (eof-object? (buf-lookahead! in 1))
         (abort "Unexpected EOF while parsing character literal")
         (string (buf-consume! in)))
-      (string (char-match in #\')) )))
+      (string (char-match in #\')))
+    (buf-posdata in)))
 
 (define (dlang/string in)
   (define text
@@ -121,7 +123,7 @@
       (string (char-match in #\"))
       (collect-char in dlang/string-char?)
       (string (char-match in #\"))))
-  (token 'string text))
+  (token 'string text (buf-posdata in)))
 
 (define (dlang/string-char? in)
   (define ch (buf-lookahead! in 1))
@@ -133,12 +135,13 @@
   (token 'symbol
     (string-append
       (string (char-match in #\$))
-      (token-text (dlang/id in)))))
+      (token-text (dlang/id in)))
+    (buf-posdata in)))
 
 (define (dlang/id in)
   (define str(collect-char in dlang/id-char?))
   (if (> (string-length str) 0)
-    (token 'id str)
+    (token 'id str (buf-posdata in))
     (abort "An Id was expected but none found.")))
 
 (define (dlang/id-char? in)
