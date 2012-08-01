@@ -79,6 +79,34 @@
       (list (syntree 'foo "" '()))
       (list (syntree 'bar "" '())))))
 
+; charport
+;------------------------------------------------------------------------------
+(def-test "charport should initialize a charport properly"
+  (call-with-input-string "a"
+    (lambda (input)
+      (define port (charport input))
+      (and (equal? input (charport-port port))
+           (equal? 1 (charport-line port))
+           (equal? 1 (charport-column port))))))
+
+; charport-read
+;------------------------------------------------------------------------------
+(def-test "charport-read should increment column when character is not newline"
+  (call-with-input-string "a"
+    (lambda (input)
+      (define port (charport input))
+      (and (equal? #\a (charport-read port))
+           (equal? 1 (charport-line port))
+           (equal? 2 (charport-column port))))))
+
+(def-test "charport-read should increment line when character is newline"
+  (call-with-input-string "\n"
+    (lambda (input)
+      (define port (charport input))
+      (and (equal? #\newline (charport-read port))
+           (equal? 2 (charport-line port))
+           (equal? 1 (charport-column port))))))
+
 ; char-match
 ;------------------------------------------------------------------------------
 (def-test "char-match should consume and return char if the next char matches"
