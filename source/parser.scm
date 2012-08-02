@@ -66,7 +66,11 @@
   (keyword-match in "def")
   (set! node
     (syntree 'define ""
-      (list (token->syntree (token-match in 'id)) (dlang/expression in))))
+      (list
+        (token->syntree (token-match in 'id))
+        (if (test-apply dlang/id-list in)
+          (dlang/func-body in)
+          (dlang/expression in)))))
   (token-match in 'term)
   node)
 
@@ -99,13 +103,17 @@
   node)
 
 (define (dlang/func in)
-  (define node (syntree 'func "" '()))
+  (define node '())
   (keyword-match in "func")
-  (syntree-children-set! node
-    (list (dlang/id-list in) (dlang/expr-block in 'term)))
+  (set! node (dlang/func-body in))
   (token-match in 'term)
-  (syntree-type-set! node 'func)
   node)
+
+(define (dlang/func-body in)
+  (syntree 'func ""
+    (list
+      (dlang/id-list in)
+      (dlang/expr-block in 'term))))
 
 (define (dlang/basic-expr in)
   (if (token-matches? in 'lpar)
