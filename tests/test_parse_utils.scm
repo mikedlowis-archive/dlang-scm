@@ -282,7 +282,7 @@
       (define buffer (dlang/lexer input))
       (token=?
         (keyword-match buffer "abc")
-        (token 'id "abc" (posdata "(string)" 1 4))))))
+        (token 'id "abc" (posdata "(string)" 1 2))))))
 
 (def-test "keyword-match should error if next token not an id"
   (call-with-input-string "1.0"
