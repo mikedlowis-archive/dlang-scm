@@ -1,9 +1,13 @@
 (declare (unit lexer) (uses parse-utils))
 
 (define (dlang/lexer input)
-  (buf (buf input read-char) dlang/tokenize))
+  (buf (dlang/char-buf input) dlang/tokenize))
+
+(define (dlang/char-buf input)
+  (buf (charport input) charport-read))
 
 (define (dlang/tokenize in)
+  (define location (buf-posdata in))
   (let ((ch (buf-lookahead! in 1)))
     (define tok
       (cond
@@ -35,13 +39,13 @@
 
         ; Punctuation and Parens
         ((char=? ch #\()
-         (token 'lpar (string (buf-consume! in))))
+         (token 'lpar (string (buf-consume! in)) location))
         ((char=? ch #\))
-         (token 'rpar (string (buf-consume! in))))
+         (token 'rpar (string (buf-consume! in)) location))
         ((char=? ch #\,)
-         (token 'comma (string (buf-consume! in))))
+         (token 'comma (string (buf-consume! in)) location))
         ((char=? ch #\;)
-         (token 'term (string (buf-consume! in))))
+         (token 'term (string (buf-consume! in)) location))
 
         ; Id
         (else
@@ -68,6 +72,7 @@
        (not (eof-object? (buf-lookahead! in 1)))))
 
 (define (dlang/number in)
+  (define location (buf-posdata in))
   (token 'number
     (string-append
       (if (char=? #\- (buf-lookahead! in 1))
@@ -77,7 +82,8 @@
         (dlang/decimal in) "")
       (if (or (char=? (buf-lookahead! in 1) #\e)
               (char=? (buf-lookahead! in 1) #\E))
-        (dlang/exponent in) ""))))
+        (dlang/exponent in) ""))
+    location))
 
 (define (dlang/integer in)
   (if (and
@@ -104,21 +110,24 @@
     (dlang/integer in)))
 
 (define (dlang/character in)
+  (define location (buf-posdata in))
   (token 'character
     (string-append
       (string (char-match in #\'))
       (if (eof-object? (buf-lookahead! in 1))
         (abort "Unexpected EOF while parsing character literal")
         (string (buf-consume! in)))
-      (string (char-match in #\')) )))
+      (string (char-match in #\')))
+    location))
 
 (define (dlang/string in)
+  (define location (buf-posdata in))
   (define text
     (string-append
       (string (char-match in #\"))
       (collect-char in dlang/string-char?)
       (string (char-match in #\"))))
-  (token 'string text))
+  (token 'string text location))
 
 (define (dlang/string-char? in)
   (define ch (buf-lookahead! in 1))
@@ -127,15 +136,18 @@
        (not (char=? #\" ch))))
 
 (define (dlang/symbol in)
+  (define location (buf-posdata in))
   (token 'symbol
     (string-append
       (string (char-match in #\$))
-      (token-text (dlang/id in)))))
+      (token-text (dlang/id in)))
+    location))
 
 (define (dlang/id in)
+  (define location (buf-posdata in))
   (define str(collect-char in dlang/id-char?))
   (if (> (string-length str) 0)
-    (token 'id str)
+    (token 'id str location)
     (abort "An Id was expected but none found.")))
 
 (define (dlang/id-char? in)

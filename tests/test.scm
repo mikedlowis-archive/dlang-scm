@@ -3,7 +3,7 @@
 (define unit-tests '())
 
 (define (register-test! test)
-  (set! unit-tests (append unit-tests (list test))))
+  (set! unit-tests (cons test unit-tests)))
 
 (define (print-summary pass fail)
   (if (zero? fail)
