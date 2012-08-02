@@ -165,6 +165,19 @@
             (syntree 'id "foo" '())
             (syntree 'number "1.0" '())))))))
 
+(def-test "dlang/define should parse a function definition"
+  (call-with-input-string "def foo() 1.0;"
+    (lambda (input)
+      (define lxr (dlang/lexer input))
+      (define result (dlang/define lxr))
+      (syntree=? result
+        (syntree 'define ""
+          (list (syntree 'id "foo" '())
+                (syntree 'func ""
+                  (list (syntree 'args "" '())
+                        (syntree 'block ""
+                          (list (syntree 'number "1.0" '())))))))))))
+
 (def-test "dlang/define should error when no terminator found"
   (call-with-input-string "def foo 1.0"
     (lambda (input)
