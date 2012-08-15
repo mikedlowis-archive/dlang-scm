@@ -38,6 +38,9 @@
         (syntree=? (car ch1) (car ch2))
         (syntree-children=? (cdr ch1) (cdr ch2))))))
 
+(define-record charobj char pos)
+(define charobj make-charobj)
+
 (define (charport-read chprt)
   (define ch (read-char (charport-port chprt)))
   (cond
@@ -47,7 +50,7 @@
       (charport-column-set! chprt 1))
     (else
       (charport-column-set! chprt (+ 1 (charport-column chprt)))))
-  ch)
+  (if (eof-object? ch) ch (charobj ch (charport-posdata chprt))))
 
 (define (charport-posdata chprt)
   (posdata
