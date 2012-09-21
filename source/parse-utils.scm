@@ -41,6 +41,10 @@
 (define-record charobj char pos)
 (define charobj make-charobj)
 
+(define (charobj=? cho1 cho2)
+  (and (char=?    (charobj-char cho1) (charobj-char cho2))
+       (posdata=? (charobj-pos cho1)  (charobj-pos cho2))))
+
 (define (charport-read chprt)
   (define ch (read-char (charport-port chprt)))
   (cond
@@ -125,7 +129,7 @@
   (not (null? result)))
 
 (define (collect-char in predfn)
-  (list->string (collect in predfn buf-consume!)))
+  (list->string (map charobj-char (collect in predfn buf-consume!))))
 
 (define (consume-all in predfn)
   (when (predfn in)

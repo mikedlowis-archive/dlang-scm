@@ -86,14 +86,13 @@
     location))
 
 (define (dlang/integer in)
-  (if (and
-        (not (eof-object? (buf-lookahead! in 1)))
-        (char-numeric? (buf-lookahead! in 1)))
-    (collect-char in dlang/integer?)
-    (abort "Expected an integer")))
+  (if (dlang/integer? in)
+      (collect-char in dlang/integer?)
+      (abort "Expected an integer")))
 
 (define (dlang/integer? in)
-  (char-numeric? (buf-lookahead! in 1)))
+  (and (not (eof-object? (buf-lookahead! in 1)))
+       (char-numeric? (charobj-char (buf-lookahead! in 1)))))
 
 (define (dlang/decimal in)
   (string-append

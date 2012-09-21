@@ -15,7 +15,7 @@ foo()
 foo(1)
 foo(1, 2)
 foo(1, 2, 3)
-(foo . $bar)(1, 2, 3)
+#(foo . $bar)(1, 2, 3)
 
 # Definition and assignment
 def foo 5 ;

@@ -149,7 +149,8 @@
   (call-with-input-string "a"
     (lambda (input)
       (define port (charport input))
-      (and (equal? #\a (charport-read port))
+      (define chobj (charport-read port))
+      (and (charobj=? (charobj #\a (posdata "(string)" 1 2)) chobj)
            (equal? 1 (charport-line port))
            (equal? 2 (charport-column port))))))
 
@@ -157,7 +158,8 @@
   (call-with-input-string "\n"
     (lambda (input)
       (define port (charport input))
-      (and (equal? #\newline (charport-read port))
+      (define chobj (charport-read port))
+      (and (charobj=? (charobj #\newline (posdata "(string)" 2 1)) chobj)
            (equal? 2 (charport-line port))
            (equal? 1 (charport-column port))))))
 
@@ -331,19 +333,19 @@
 (def-test "should return empty string if predicate function returns false"
   (call-with-input-string "abc"
     (lambda (input)
-      (define buffer (buf input read-char))
+      (define buffer (buf (charport input) charport-read))
       (equal? "" (collect-char buffer dlang/integer?)))))
 
 (def-test "should return empty string if predicate function returns false due to EOF"
   (call-with-input-string ""
     (lambda (input)
-      (define buffer (buf input read-char))
+     (define buffer (buf (charport input) charport-read))
       (equal? "" (collect-char buffer dlang/integer?)))))
 
 (def-test "should return string containing chars from buffer when predicate returns true"
   (call-with-input-string "123"
     (lambda (input)
-      (define buffer (buf input read-char))
+     (define buffer (buf (charport input) charport-read))
       (equal? "123" (collect-char buffer dlang/integer?)))))
 
 ; consume-all
@@ -351,28 +353,32 @@
 (def-test "should consume nothing if predicate never returns true"
   (call-with-input-string "abc"
     (lambda (input)
-      (define buffer (buf input read-char))
+      (define buffer (buf (charport input) charport-read))
       (consume-all buffer dlang/integer?)
-      (equal? #\a (buf-lookahead! buffer 1)))))
+      (charobj=? (charobj #\a (posdata "(string)" 1 2))
+                 (buf-lookahead! buffer 1)))))
 
 (def-test "should consume an item at a time until predicate returns false"
   (call-with-input-string "123a"
     (lambda (input)
-      (define buffer (buf input read-char))
+      (define buffer (buf (charport input) charport-read))
       (consume-all buffer dlang/integer?)
-      (equal? #\a (buf-lookahead! buffer 1)))))
+      (charobj=? (charobj #\a (posdata "(string)" 1 5))
+                 (buf-lookahead! buffer 1)))))
 
 ; collect
 ;------------------------------------------------------------------------------
 (def-test "should return empty list if predicate never returns true"
   (call-with-input-string "abc"
     (lambda (input)
-      (define buffer (buf input read-char))
+      (define buffer (buf (charport input) charport-read))
       (equal? '() (collect buffer dlang/integer? buf-consume!)))))
 
 (def-test "should return list of items for which predicate returned true"
   (call-with-input-string "123"
     (lambda (input)
-      (define buffer (buf input read-char))
-      (equal? '(#\1 #\2 #\3) (collect buffer dlang/integer? buf-consume!)))))
+      (define buffer (buf (charport input) charport-read))
+      (define result (collect buffer dlang/integer? buf-consume!))
+      (equal? '(#\1 #\2 #\3)
+              (map charobj-char result)))))
 
