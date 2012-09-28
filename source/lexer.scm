@@ -19,32 +19,31 @@
          (dlang/whitespace in))
 
         ; Comment
-        ((char=? (chobj-char ch) #\#)
+        ((chobj-char=? ch #\#)
          (dlang/comment in))
 
         ; Number
-        ((or
-           (and (char=? (chobj-char ch) #\-) (dlang/integer? (buf-lookahead! in 2)))
-           (char-numeric? (chobj-char ch)))
+        ((or (and (chobj-char=? ch #\-) (dlang/integer? (buf-lookahead! in 2)))
+             (char-numeric? (chobj-char ch)))
          (dlang/number in))
 
         ; Character
-        ((char=? (chobj-char ch) #\') (dlang/character in))
+        ((chobj-char=? ch #\') (dlang/character in))
 
         ; String
-        ((char=? (chobj-char ch) #\") (dlang/string in))
+        ((chobj-char=? ch #\") (dlang/string in))
 
         ; Symbol
-        ((char=? (chobj-char ch) #\$) (dlang/symbol in))
+        ((chobj-char=? ch #\$) (dlang/symbol in))
 
         ; Punctuation and Parens
-        ((char=? (chobj-char ch) #\()
+        ((chobj-char=? ch #\()
          (token 'lpar (string (chobj-char (buf-consume! in))) location))
-        ((char=? (chobj-char ch) #\))
+        ((chobj-char=? ch #\))
          (token 'rpar (string (chobj-char (buf-consume! in))) location))
-        ((char=? (chobj-char ch) #\,)
+        ((chobj-char=? ch #\,)
          (token 'comma (string (chobj-char (buf-consume! in))) location))
-        ((char=? (chobj-char ch) #\;)
+        ((chobj-char=? ch #\;)
          (token 'term (string (chobj-char (buf-consume! in))) location))
 
         ; Id
@@ -52,7 +51,7 @@
           (dlang/id in))))
     (if (and (not (eof-object? tok))
              (equal? "end" (token-text tok)))
-      (token-type-set! tok 'term))
+        (token-type-set! tok 'term))
     tok))
 
 (define (dlang/whitespace in)
@@ -70,23 +69,20 @@
 
 (define (dlang/comment? in)
   (and (not (eof-object? (buf-lookahead! in 1)))
-       (not (char=? (chobj-char (buf-lookahead! in 1)) #\newline))))
+       (not (chobj-char=? (buf-lookahead! in 1) #\newline))))
 
 (define (dlang/number in)
   (define location (buf-posdata in))
   (token 'number
     (string-append
-      (if (and (not (eof-object? (buf-lookahead! in 1)))
-               (char=? #\- (chobj-char (buf-lookahead! in 1))))
-        (string (chobj-char (buf-consume! in))) "")
+      (if (chobj-char=? (buf-lookahead! in 1) #\-)
+          (string (chobj-char (buf-consume! in))) "")
       (dlang/integer in)
-      (if (and (not (eof-object? (buf-lookahead! in 1)))
-               (char=? (chobj-char (buf-lookahead! in 1)) #\.))
-        (dlang/decimal in) "")
-      (if (and (not (eof-object? (buf-lookahead! in 1)))
-               (or (char=? (chobj-char (buf-lookahead! in 1)) #\e)
-                   (char=? (chobj-char (buf-lookahead! in 1)) #\E)))
-        (dlang/exponent in) ""))
+      (if (chobj-char=? (buf-lookahead! in 1) #\.)
+          (dlang/decimal in) "")
+      (if (or (chobj-char=? (buf-lookahead! in 1) #\e)
+              (chobj-char=? (buf-lookahead! in 1) #\E))
+          (dlang/exponent in) ""))
     location))
 
 (define (dlang/integer in)

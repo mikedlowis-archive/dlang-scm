@@ -43,6 +43,10 @@
   (and (char=?    (chobj-char cho1) (chobj-char cho2))
        (posdata=? (chobj-pos cho1)  (chobj-pos cho2))))
 
+(define (chobj-char=? obj ch)
+  (and (not (eof-object? obj))
+       (char=? (chobj-char obj) ch)))
+
 (define (charport-read chprt)
   (define ch (read-char (charport-port chprt)))
   (cond
