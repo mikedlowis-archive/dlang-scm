@@ -146,8 +146,7 @@
       (define buffer (dlang/char-buf input))
       (define result (dlang/whitespace buffer))
       (token=? result
-        (token 'id "foo" (posdata "(string)" 2 2)))
-      )))
+        (token 'id "foo" (posdata "(string)" 2 2))))))
 
 ; dlang/comment
 ;------------------------------------------------------------------------------

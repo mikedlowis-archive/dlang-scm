@@ -73,13 +73,13 @@
   (if (eof-object? actual)
     (abort
       (string-append "Expected '" (string expect) "', received EOF instead"))
-    (if (equal? expect actual)
+    (if (equal? expect (charobj-char actual))
       (buf-consume! buf)
       (abort
         (string-append
           "Expected '" (string expect)
-          "', received '" (string actual) "' instead"))))
-  actual)
+          "', received '" (string (charobj-char actual)) "' instead"))))
+  (charobj-char actual))
 
 (define (token-match buf expect)
   (define actual (buf-lookahead! buf 1))

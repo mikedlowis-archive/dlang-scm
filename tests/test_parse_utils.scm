@@ -214,21 +214,21 @@
 (def-test "char-match should consume and return char if the next char matches"
   (call-with-input-string "a"
     (lambda (input)
-      (define buffer (buf input read-char))
+      (define buffer (buf (charport input) charport-read))
       (and (equal? #\a (char-match buffer #\a))
            (eof-object? (buf-lookahead! buffer 1))))))
 
 (def-test "char-match should error when EOF"
   (call-with-input-string ""
     (lambda (input)
-      (define buffer (buf input read-char))
+      (define buffer (buf (charport input) charport-read))
       (check-exception "Expected 'a', received EOF instead"
         (char-match buffer #\a)))))
 
 (def-test "char-match should error when chars do not match"
   (call-with-input-string "b"
     (lambda (input)
-      (define buffer (buf input read-char))
+      (define buffer (buf (charport input) charport-read))
       (check-exception "Expected 'a', received 'b' instead"
         (char-match buffer #\a)))))
 
