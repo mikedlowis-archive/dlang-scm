@@ -28,22 +28,20 @@
        (syntree-children=? (syntree-children tr1) (syntree-children tr2))))
 
 (define (syntree-children=? ch1 ch2)
-  (and
-    (or
-      (and (null? ch1) (null? ch2))
-      (and (not (null? ch1)) (not (null? ch2))))
-    (if (null? ch1)
-      #t ; If we got here and one is null then BOTH must be, hence equal
-      (and
-        (syntree=? (car ch1) (car ch2))
-        (syntree-children=? (cdr ch1) (cdr ch2))))))
+  (and (or (and (null? ch1) (null? ch2))
+           (and (not (null? ch1)) (not (null? ch2))))
+       (if (null? ch1)
+         #t ; If we got here and one is null then BOTH must be, hence equal
+         (and
+           (syntree=? (car ch1) (car ch2))
+           (syntree-children=? (cdr ch1) (cdr ch2))))))
 
-(define-record charobj char pos)
-(define charobj make-charobj)
+(define-record chobj char pos)
+(define chobj make-chobj)
 
-(define (charobj=? cho1 cho2)
-  (and (char=?    (charobj-char cho1) (charobj-char cho2))
-       (posdata=? (charobj-pos cho1)  (charobj-pos cho2))))
+(define (chobj=? cho1 cho2)
+  (and (char=?    (chobj-char cho1) (chobj-char cho2))
+       (posdata=? (chobj-pos cho1)  (chobj-pos cho2))))
 
 (define (charport-read chprt)
   (define ch (read-char (charport-port chprt)))
@@ -54,7 +52,7 @@
       (charport-column-set! chprt 1))
     (else
       (charport-column-set! chprt (+ 1 (charport-column chprt)))))
-  (if (eof-object? ch) ch (charobj ch (charport-posdata chprt))))
+  (if (eof-object? ch) ch (chobj ch (charport-posdata chprt))))
 
 (define (charport-posdata chprt)
   (posdata
@@ -73,13 +71,13 @@
   (if (eof-object? actual)
     (abort
       (string-append "Expected '" (string expect) "', received EOF instead"))
-    (if (equal? expect (charobj-char actual))
+    (if (equal? expect (chobj-char actual))
       (buf-consume! buf)
       (abort
         (string-append
           "Expected '" (string expect)
-          "', received '" (string (charobj-char actual)) "' instead"))))
-  (charobj-char actual))
+          "', received '" (string (chobj-char actual)) "' instead"))))
+  (chobj-char actual))
 
 (define (token-match buf expect)
   (define actual (buf-lookahead! buf 1))
@@ -129,7 +127,7 @@
   (not (null? result)))
 
 (define (collect-char in predfn)
-  (list->string (map charobj-char (collect in predfn buf-consume!))))
+  (list->string (map chobj-char (collect in predfn buf-consume!))))
 
 (define (consume-all in predfn)
   (when (predfn in)

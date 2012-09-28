@@ -149,8 +149,8 @@
   (call-with-input-string "a"
     (lambda (input)
       (define port (charport input))
-      (define chobj (charport-read port))
-      (and (charobj=? (charobj #\a (posdata "(string)" 1 2)) chobj)
+      (define result (charport-read port))
+      (and (chobj=? (chobj #\a (posdata "(string)" 1 2)) result)
            (equal? 1 (charport-line port))
            (equal? 2 (charport-column port))))))
 
@@ -158,8 +158,8 @@
   (call-with-input-string "\n"
     (lambda (input)
       (define port (charport input))
-      (define chobj (charport-read port))
-      (and (charobj=? (charobj #\newline (posdata "(string)" 2 1)) chobj)
+      (define result (charport-read port))
+      (and (chobj=? (chobj #\newline (posdata "(string)" 2 1)) result)
            (equal? 2 (charport-line port))
            (equal? 1 (charport-column port))))))
 
@@ -355,7 +355,7 @@
     (lambda (input)
       (define buffer (buf (charport input) charport-read))
       (consume-all buffer dlang/integer?)
-      (charobj=? (charobj #\a (posdata "(string)" 1 2))
+      (chobj=? (chobj #\a (posdata "(string)" 1 2))
                  (buf-lookahead! buffer 1)))))
 
 (def-test "should consume an item at a time until predicate returns false"
@@ -363,7 +363,7 @@
     (lambda (input)
       (define buffer (buf (charport input) charport-read))
       (consume-all buffer dlang/integer?)
-      (charobj=? (charobj #\a (posdata "(string)" 1 5))
+      (chobj=? (chobj #\a (posdata "(string)" 1 5))
                  (buf-lookahead! buffer 1)))))
 
 ; collect
@@ -380,5 +380,5 @@
       (define buffer (buf (charport input) charport-read))
       (define result (collect buffer dlang/integer? buf-consume!))
       (equal? '(#\1 #\2 #\3)
-              (map charobj-char result)))))
+              (map chobj-char result)))))
 

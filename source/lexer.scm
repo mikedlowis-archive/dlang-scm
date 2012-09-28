@@ -19,33 +19,33 @@
          (dlang/whitespace in))
 
         ; Comment
-        ((char=? (charobj-char ch) #\#)
+        ((char=? (chobj-char ch) #\#)
          (dlang/comment in))
 
         ; Number
         ((or
-           (and (char=? (charobj-char ch) #\-) (dlang/integer? (buf-lookahead! in 2)))
-           (char-numeric? (charobj-char ch)))
+           (and (char=? (chobj-char ch) #\-) (dlang/integer? (buf-lookahead! in 2)))
+           (char-numeric? (chobj-char ch)))
          (dlang/number in))
 
         ; Character
-        ((char=? (charobj-char ch) #\') (dlang/character in))
+        ((char=? (chobj-char ch) #\') (dlang/character in))
 
         ; String
-        ((char=? (charobj-char ch) #\") (dlang/string in))
+        ((char=? (chobj-char ch) #\") (dlang/string in))
 
         ; Symbol
-        ((char=? (charobj-char ch) #\$) (dlang/symbol in))
+        ((char=? (chobj-char ch) #\$) (dlang/symbol in))
 
         ; Punctuation and Parens
-        ((char=? (charobj-char ch) #\()
-         (token 'lpar (string (charobj-char (buf-consume! in))) location))
-        ((char=? (charobj-char ch) #\))
-         (token 'rpar (string (charobj-char (buf-consume! in))) location))
-        ((char=? (charobj-char ch) #\,)
-         (token 'comma (string (charobj-char (buf-consume! in))) location))
-        ((char=? (charobj-char ch) #\;)
-         (token 'term (string (charobj-char (buf-consume! in))) location))
+        ((char=? (chobj-char ch) #\()
+         (token 'lpar (string (chobj-char (buf-consume! in))) location))
+        ((char=? (chobj-char ch) #\))
+         (token 'rpar (string (chobj-char (buf-consume! in))) location))
+        ((char=? (chobj-char ch) #\,)
+         (token 'comma (string (chobj-char (buf-consume! in))) location))
+        ((char=? (chobj-char ch) #\;)
+         (token 'term (string (chobj-char (buf-consume! in))) location))
 
         ; Id
         (else
@@ -61,7 +61,7 @@
 
 (define (dlang/whitespace? in)
   (and (not (eof-object? (buf-lookahead! in 1)))
-       (char-whitespace? (charobj-char (buf-lookahead! in 1)))))
+       (char-whitespace? (chobj-char (buf-lookahead! in 1)))))
 
 (define (dlang/comment in)
   (char-match in #\#)
@@ -70,22 +70,22 @@
 
 (define (dlang/comment? in)
   (and (not (eof-object? (buf-lookahead! in 1)))
-       (not (char=? (charobj-char (buf-lookahead! in 1)) #\newline))))
+       (not (char=? (chobj-char (buf-lookahead! in 1)) #\newline))))
 
 (define (dlang/number in)
   (define location (buf-posdata in))
   (token 'number
     (string-append
       (if (and (not (eof-object? (buf-lookahead! in 1)))
-               (char=? #\- (charobj-char (buf-lookahead! in 1))))
-        (string (charobj-char (buf-consume! in))) "")
+               (char=? #\- (chobj-char (buf-lookahead! in 1))))
+        (string (chobj-char (buf-consume! in))) "")
       (dlang/integer in)
       (if (and (not (eof-object? (buf-lookahead! in 1)))
-               (char=? (charobj-char (buf-lookahead! in 1)) #\.))
+               (char=? (chobj-char (buf-lookahead! in 1)) #\.))
         (dlang/decimal in) "")
       (if (and (not (eof-object? (buf-lookahead! in 1)))
-               (or (char=? (charobj-char (buf-lookahead! in 1)) #\e)
-                   (char=? (charobj-char (buf-lookahead! in 1)) #\E)))
+               (or (char=? (chobj-char (buf-lookahead! in 1)) #\e)
+                   (char=? (chobj-char (buf-lookahead! in 1)) #\E)))
         (dlang/exponent in) ""))
     location))
 
@@ -96,7 +96,7 @@
 
 (define (dlang/integer? in)
   (and (not (eof-object? (buf-lookahead! in 1)))
-       (char-numeric? (charobj-char (buf-lookahead! in 1)))))
+       (char-numeric? (chobj-char (buf-lookahead! in 1)))))
 
 (define (dlang/decimal in)
   (string-append
@@ -107,12 +107,12 @@
   (string-append
     (string
       (if (and (not (eof-object? (buf-lookahead! in 1)))
-               (char=? #\e (charobj-char (buf-lookahead! in 1))))
+               (char=? #\e (chobj-char (buf-lookahead! in 1))))
         (char-match in #\e)
         (char-match in #\E)))
     (if (and (not (eof-object? (buf-lookahead! in 1)))
-             (char=? #\- (charobj-char (buf-lookahead! in 1))))
-      (string (charobj-char (buf-consume! in))) "")
+             (char=? #\- (chobj-char (buf-lookahead! in 1))))
+      (string (chobj-char (buf-consume! in))) "")
     (dlang/integer in)))
 
 (define (dlang/character in)
@@ -122,7 +122,7 @@
       (string (char-match in #\'))
       (if (eof-object? (buf-lookahead! in 1))
         (abort "Unexpected EOF while parsing character literal")
-        (string (charobj-char (buf-consume! in))))
+        (string (chobj-char (buf-consume! in))))
       (string (char-match in #\')))
     location))
 
@@ -138,8 +138,8 @@
 (define (dlang/string-char? in)
   (define ch (buf-lookahead! in 1))
   (and (not (eof-object? ch))
-       (not (char=? #\newline (charobj-char ch)))
-       (not (char=? #\" (charobj-char ch)))))
+       (not (char=? #\newline (chobj-char ch)))
+       (not (char=? #\" (chobj-char ch)))))
 
 (define (dlang/symbol in)
   (define location (buf-posdata in))
@@ -159,8 +159,8 @@
 (define (dlang/id-char? in)
   (define ch (buf-lookahead! in 1))
   (and (not (eof-object? ch))
-       (not (char-whitespace? (charobj-char ch)))
-       (case (charobj-char ch)
+       (not (char-whitespace? (chobj-char ch)))
+       (case (chobj-char ch)
          ((#\( #\) #\; #\, #\' #\" #\$ #\#) #f)
          (else #t))))
 
