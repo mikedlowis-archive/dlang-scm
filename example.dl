@@ -1,4 +1,4 @@
-## Literals
+# Literals
 "foo"
 'a'
 1.0
@@ -17,16 +17,16 @@ foo(1, 2)
 foo(1, 2, 3)
 #(foo . $bar)(1, 2, 3)
 
-# Definition and assignment
+ Definition and assignment
 def foo 5 ;
 set! foo 6 ;
 def foo 5 end
 set! foo 6 end
 
 # Special function definition shorthand (not yet supported)
-#def max(a, b)
-#   if (a > b) a b;
-#end
+def max(a, b)
+   if (a > b) a b;
+end
 
 # If statement
 if conditional

@@ -15,7 +15,7 @@
         ((eof-object? ch) ch)
 
         ; Whitespace
-        ((dlang/whitespace? in)
+        ((chobj-whitespace? ch)
          (dlang/whitespace in))
 
         ; Comment
@@ -23,8 +23,8 @@
          (dlang/comment in))
 
         ; Number
-        ((or (and (chobj-char=? ch #\-) (dlang/integer? (buf-lookahead! in 2)))
-             (char-numeric? (chobj-char ch)))
+        ((or (and (chobj-char=? ch #\-) (chobj-numeric? (buf-lookahead! in 2)))
+             (chobj-numeric? ch))
          (dlang/number in))
 
         ; Character
@@ -59,8 +59,7 @@
   (dlang/tokenize in))
 
 (define (dlang/whitespace? in)
-  (and (not (eof-object? (buf-lookahead! in 1)))
-       (char-whitespace? (chobj-char (buf-lookahead! in 1)))))
+  (chobj-whitespace? (buf-lookahead! in 1)))
 
 (define (dlang/comment in)
   (char-match in #\#)
@@ -102,13 +101,11 @@
 (define (dlang/exponent in)
   (string-append
     (string
-      (if (and (not (eof-object? (buf-lookahead! in 1)))
-               (char=? #\e (chobj-char (buf-lookahead! in 1))))
-        (char-match in #\e)
-        (char-match in #\E)))
-    (if (and (not (eof-object? (buf-lookahead! in 1)))
-             (char=? #\- (chobj-char (buf-lookahead! in 1))))
-      (string (chobj-char (buf-consume! in))) "")
+      (if (chobj-char=? (buf-lookahead! in 1) #\e)
+          (char-match in #\e)
+          (char-match in #\E)))
+    (if (chobj-char=? (buf-lookahead! in 1) #\-)
+        (string (chobj-char (buf-consume! in))) "")
     (dlang/integer in)))
 
 (define (dlang/character in)
@@ -134,8 +131,8 @@
 (define (dlang/string-char? in)
   (define ch (buf-lookahead! in 1))
   (and (not (eof-object? ch))
-       (not (char=? #\newline (chobj-char ch)))
-       (not (char=? #\" (chobj-char ch)))))
+       (not (chobj-char=? ch #\newline))
+       (not (chobj-char=? ch #\"))))
 
 (define (dlang/symbol in)
   (define location (buf-posdata in))
@@ -155,7 +152,7 @@
 (define (dlang/id-char? in)
   (define ch (buf-lookahead! in 1))
   (and (not (eof-object? ch))
-       (not (char-whitespace? (chobj-char ch)))
+       (not (chobj-whitespace? ch))
        (case (chobj-char ch)
          ((#\( #\) #\; #\, #\' #\" #\$ #\#) #f)
          (else #t))))

@@ -47,6 +47,14 @@
   (and (not (eof-object? obj))
        (char=? (chobj-char obj) ch)))
 
+(define (chobj-numeric? ch)
+  (and (not (eof-object? ch))
+       (char-numeric? (chobj-char ch))))
+
+(define (chobj-whitespace? ch)
+  (and (not (eof-object? ch))
+       (char-whitespace? (chobj-char ch))))
+
 (define (charport-read chprt)
   (define ch (read-char (charport-port chprt)))
   (cond
@@ -75,7 +83,7 @@
   (if (eof-object? actual)
     (abort
       (string-append "Expected '" (string expect) "', received EOF instead"))
-    (if (equal? expect (chobj-char actual))
+    (if (chobj-char=? actual expect)
       (buf-consume! buf)
       (abort
         (string-append
