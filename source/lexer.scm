@@ -7,7 +7,7 @@
   (buf (charport input) charport-read))
 
 (define (dlang/tokenize in)
-  (define location (buf-posdata in))
+  (define location (current-buf-posdata in))
   (let ((ch (buf-lookahead! in 1)))
     (define tok
       (cond
@@ -71,7 +71,7 @@
        (not (chobj-char=? (buf-lookahead! in 1) #\newline))))
 
 (define (dlang/number in)
-  (define location (buf-posdata in))
+  (define location (current-buf-posdata in))
   (token 'number
     (string-append
       (if (chobj-char=? (buf-lookahead! in 1) #\-)
@@ -109,18 +109,18 @@
     (dlang/integer in)))
 
 (define (dlang/character in)
-  (define location (buf-posdata in))
+  (define location (current-buf-posdata in))
   (token 'character
     (string-append
       (string (char-match in #\'))
       (if (eof-object? (buf-lookahead! in 1))
-        (abort "Unexpected EOF while parsing character literal")
-        (string (chobj-char (buf-consume! in))))
+          (abort "Unexpected EOF while parsing character literal")
+          (string (chobj-char (buf-consume! in))))
       (string (char-match in #\')))
     location))
 
 (define (dlang/string in)
-  (define location (buf-posdata in))
+  (define location (current-buf-posdata in))
   (define text
     (string-append
       (string (char-match in #\"))
@@ -135,7 +135,7 @@
        (not (chobj-char=? ch #\"))))
 
 (define (dlang/symbol in)
-  (define location (buf-posdata in))
+  (define location (current-buf-posdata in))
   (token 'symbol
     (string-append
       (string (char-match in #\$))
@@ -143,17 +143,17 @@
     location))
 
 (define (dlang/id in)
-  (define location (buf-posdata in))
+  (define location (current-buf-posdata in))
   (define str (collect-char in dlang/id-char?))
   (if (> (string-length str) 0)
-    (token 'id str location)
-    (abort "An Id was expected but none found.")))
+      (token 'id str location)
+      (abort "An Id was expected but none found.")))
 
 (define (dlang/id-char? in)
   (define ch (buf-lookahead! in 1))
   (and (not (eof-object? ch))
        (not (chobj-whitespace? ch))
        (case (chobj-char ch)
-         ((#\( #\) #\; #\, #\' #\" #\$ #\#) #f)
-         (else #t))))
+             ((#\( #\) #\; #\, #\' #\" #\$ #\#) #f)
+             (else #t))))
 

@@ -34,12 +34,12 @@
 
 (define (dlang/expression in)
   (if (dlang/core-form? in)
-    (dlang/core-form in)
-    (let ((result (dlang/basic-expr in)))
-      (if (dlang/arg-list? in)
-        (syntree 'apply ""
-          (append (list result) (syntree-children (dlang/arg-list in))))
-        result))))
+      (dlang/core-form in)
+      (let ((result (dlang/basic-expr in)))
+        (if (dlang/arg-list? in)
+            (syntree 'apply ""
+              (append (list result) (syntree-children (dlang/arg-list in))))
+            result))))
 
 (define (dlang/core-form in)
   (define tok (buf-lookahead! in 1))
@@ -55,11 +55,7 @@
 (define (dlang/core-form? in)
   (define tok (buf-lookahead! in 1))
   (define text (if (eof-object? tok) "" (token-text tok)))
-  (or (string=? text "def")
-      (string=? text "set!")
-      (string=? text "if")
-      (string=? text "begin")
-      (string=? text "func")))
+  (list? (member text '("def" "set!" "if" "begin" "func"))))
 
 (define (dlang/define in)
   (define node '())
@@ -139,13 +135,9 @@
 (define (dlang/literal in)
   (define tok (buf-lookahead! in 1))
   (define type (if (eof-object? tok) '() (token-type tok)))
-  (if (or (equal? 'id type)
-          (equal? 'character type)
-          (equal? 'string type)
-          (equal? 'symbol type)
-          (equal? 'number type))
-    (set! tok (buf-consume! in))
-    (abort "Expected a literal"))
+  (if (list? (member type '(id character string symbol number)))
+      (set! tok (buf-consume! in))
+      (abort "Expected a literal"))
   (syntree (token-type tok) (token-text tok) '()))
 
 (define (dlang/arg-list in)
@@ -182,8 +174,7 @@
 
 (define (dlang/expr-block in term)
   (syntree 'block ""
-    (collect
-      in
+    (collect in
       (lambda (buf) (not (token-matches? buf term)))
       dlang/expression)))
 

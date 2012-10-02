@@ -52,7 +52,7 @@
       (define buffer (dlang/char-buf input))
       (define result (dlang/tokenize buffer))
       (token=? result
-        (token 'number "12" (posdata "(string)" 1 2))))))
+        (token 'number "12" (posdata "(string)" 1 1))))))
 
 (def-test "dlang/tokenize should recognize a character"
   (call-with-input-string "'a'"
@@ -60,7 +60,7 @@
       (define buffer (dlang/char-buf input))
       (define result (dlang/tokenize buffer))
       (token=? result
-        (token 'character "'a'" (posdata "(string)" 1 2))))))
+        (token 'character "'a'" (posdata "(string)" 1 1))))))
 
 (def-test "dlang/tokenize should recognize a string"
   (call-with-input-string "\"\""
@@ -68,7 +68,7 @@
       (define buffer (dlang/char-buf input))
       (define result (dlang/tokenize buffer))
       (token=? result
-        (token 'string "\"\"" (posdata "(string)" 1 2))))))
+        (token 'string "\"\"" (posdata "(string)" 1 1))))))
 
 (def-test "dlang/tokenize should recognize a symbol"
   (call-with-input-string "$foobar"
@@ -76,7 +76,7 @@
       (define buffer (dlang/char-buf input))
       (define result (dlang/tokenize buffer))
       (token=? result
-        (token 'symbol "$foobar" (posdata "(string)" 1 2))))))
+        (token 'symbol "$foobar" (posdata "(string)" 1 1))))))
 
 (def-test "dlang/tokenize should recognize an id"
   (call-with-input-string "foobar"
@@ -84,7 +84,7 @@
       (define buffer (dlang/char-buf input))
       (define result (dlang/tokenize buffer))
       (token=? result
-        (token 'id "foobar" (posdata "(string)" 1 2))))))
+        (token 'id "foobar" (posdata "(string)" 1 1))))))
 
 (def-test "dlang/tokenize should recognize the EOF"
   (call-with-input-string ""
@@ -130,7 +130,7 @@
       (define buffer (dlang/char-buf input))
       (define result (dlang/tokenize buffer))
       (token=? result
-        (token 'term "end" (posdata "(string)" 1 2))))))
+        (token 'term "end" (posdata "(string)" 1 1))))))
 
 ; dlang/whitespace
 ;------------------------------------------------------------------------------
@@ -146,7 +146,7 @@
       (define buffer (dlang/char-buf input))
       (define result (dlang/whitespace buffer))
       (token=? result
-        (token 'id "foo" (posdata "(string)" 2 2))))))
+        (token 'id "foo" (posdata "(string)" 2 1))))))
 
 ; dlang/comment
 ;------------------------------------------------------------------------------
@@ -180,8 +180,7 @@
       (define buffer (dlang/char-buf input))
       (define result (dlang/comment buffer))
       (token=? result
-        (token 'id "bar" (posdata "(string)" 2 2)))
-      )))
+        (token 'id "bar" (posdata "(string)" 2 1))))))
 
 ; dlang/number
 ;------------------------------------------------------------------------------

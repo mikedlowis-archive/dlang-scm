@@ -57,6 +57,7 @@
 
 (define (charport-read chprt)
   (define ch (read-char (charport-port chprt)))
+  (define pos (charport-posdata chprt))
   (cond
     ((eof-object? ch)) ; Do nothing for EOFs
     ((char=? ch #\newline)
@@ -64,13 +65,21 @@
       (charport-column-set! chprt 1))
     (else
       (charport-column-set! chprt (+ 1 (charport-column chprt)))))
-  (if (eof-object? ch) ch (chobj ch (charport-posdata chprt))))
+  (if (eof-object? ch) ch (chobj ch pos)))
 
 (define (charport-posdata chprt)
   (posdata
     (port-name (charport-port chprt))
     (charport-line chprt)
     (charport-column chprt)))
+
+(define (current-buf-posdata in)
+  (define itm (buf-lookahead! in 1))
+  (cond
+    ((eof-object? itm) (buf-posdata in))
+    ((token? itm)      (token-pos itm))
+    ((chobj? itm)      (chobj-pos itm))
+    (else              (abort "Argument was not a buf or a charport"))))
 
 (define (buf-posdata in)
   (cond

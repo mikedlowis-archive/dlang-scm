@@ -150,7 +150,7 @@
     (lambda (input)
       (define port (charport input))
       (define result (charport-read port))
-      (and (chobj=? (chobj #\a (posdata "(string)" 1 2)) result)
+      (and (chobj=? (chobj #\a (posdata "(string)" 1 1)) result)
            (equal? 1 (charport-line port))
            (equal? 2 (charport-column port))))))
 
@@ -159,7 +159,7 @@
     (lambda (input)
       (define port (charport input))
       (define result (charport-read port))
-      (and (chobj=? (chobj #\newline (posdata "(string)" 2 1)) result)
+      (and (chobj=? (chobj #\newline (posdata "(string)" 1 1)) result)
            (equal? 2 (charport-line port))
            (equal? 1 (charport-column port))))))
 
@@ -240,7 +240,7 @@
       (define buffer (dlang/lexer input))
       (token=?
         (token-match buffer 'id)
-        (token 'id "a" (posdata "(string)" 1 2))))))
+        (token 'id "a" (posdata "(string)" 1 1))))))
 
 (def-test "token-match should error when EOF received"
   (call-with-input-string ""
@@ -284,7 +284,7 @@
       (define buffer (dlang/lexer input))
       (token=?
         (keyword-match buffer "abc")
-        (token 'id "abc" (posdata "(string)" 1 2))))))
+        (token 'id "abc" (posdata "(string)" 1 1))))))
 
 (def-test "keyword-match should error if next token not an id"
   (call-with-input-string "1.0"
@@ -355,7 +355,7 @@
     (lambda (input)
       (define buffer (buf (charport input) charport-read))
       (consume-all buffer dlang/integer?)
-      (chobj=? (chobj #\a (posdata "(string)" 1 2))
+      (chobj=? (chobj #\a (posdata "(string)" 1 1))
                  (buf-lookahead! buffer 1)))))
 
 (def-test "should consume an item at a time until predicate returns false"
@@ -363,7 +363,7 @@
     (lambda (input)
       (define buffer (buf (charport input) charport-read))
       (consume-all buffer dlang/integer?)
-      (chobj=? (chobj #\a (posdata "(string)" 1 5))
+      (chobj=? (chobj #\a (posdata "(string)" 1 4))
                  (buf-lookahead! buffer 1)))))
 
 ; collect
