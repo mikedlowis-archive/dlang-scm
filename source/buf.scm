@@ -11,9 +11,9 @@
 (define (buf? obj)
   (and (buf-struct? obj)
        (procedure? (buf-ldfn obj))
-       (integer?  (buf-pos obj))
-       (list?     (buf-marks obj))
-       (vector?   (buf-data obj))))
+       (integer?   (buf-pos obj))
+       (list?      (buf-marks obj))
+       (vector?    (buf-data obj))))
 
 (define (vector-append v1 v2 . vN)
   (define new-vec (list->vector (append (vector->list v1) (vector->list v2))))
