@@ -28,18 +28,36 @@
        (syntree-children=? (syntree-children tr1) (syntree-children tr2))))
 
 (define (syntree-children=? ch1 ch2)
-  (and
-    (or
-      (and (null? ch1) (null? ch2))
-      (and (not (null? ch1)) (not (null? ch2))))
-    (if (null? ch1)
-      #t ; If we got here and one is null then BOTH must be, hence equal
-      (and
-        (syntree=? (car ch1) (car ch2))
-        (syntree-children=? (cdr ch1) (cdr ch2))))))
+  (and (or (and (null? ch1) (null? ch2))
+           (and (not (null? ch1)) (not (null? ch2))))
+       (if (null? ch1)
+         #t ; If we got here and one is null then BOTH must be, hence equal
+         (and
+           (syntree=? (car ch1) (car ch2))
+           (syntree-children=? (cdr ch1) (cdr ch2))))))
+
+(define-record chobj char pos)
+(define chobj make-chobj)
+
+(define (chobj=? cho1 cho2)
+  (and (char=?    (chobj-char cho1) (chobj-char cho2))
+       (posdata=? (chobj-pos cho1)  (chobj-pos cho2))))
+
+(define (chobj-char=? obj ch)
+  (and (not (eof-object? obj))
+       (char=? (chobj-char obj) ch)))
+
+(define (chobj-numeric? ch)
+  (and (not (eof-object? ch))
+       (char-numeric? (chobj-char ch))))
+
+(define (chobj-whitespace? ch)
+  (and (not (eof-object? ch))
+       (char-whitespace? (chobj-char ch))))
 
 (define (charport-read chprt)
   (define ch (read-char (charport-port chprt)))
+  (define pos (charport-posdata chprt))
   (cond
     ((eof-object? ch)) ; Do nothing for EOFs
     ((char=? ch #\newline)
@@ -47,13 +65,21 @@
       (charport-column-set! chprt 1))
     (else
       (charport-column-set! chprt (+ 1 (charport-column chprt)))))
-  ch)
+  (if (eof-object? ch) ch (chobj ch pos)))
 
 (define (charport-posdata chprt)
   (posdata
     (port-name (charport-port chprt))
     (charport-line chprt)
     (charport-column chprt)))
+
+(define (current-buf-posdata in)
+  (define itm (buf-lookahead! in 1))
+  (cond
+    ((eof-object? itm) (buf-posdata in))
+    ((token? itm)      (token-pos itm))
+    ((chobj? itm)      (chobj-pos itm))
+    (else              (abort "Argument was not a buf or a charport"))))
 
 (define (buf-posdata in)
   (cond
@@ -66,13 +92,13 @@
   (if (eof-object? actual)
     (abort
       (string-append "Expected '" (string expect) "', received EOF instead"))
-    (if (equal? expect actual)
+    (if (chobj-char=? actual expect)
       (buf-consume! buf)
       (abort
         (string-append
           "Expected '" (string expect)
-          "', received '" (string actual) "' instead"))))
-  actual)
+          "', received '" (string (chobj-char actual)) "' instead"))))
+  (chobj-char actual))
 
 (define (token-match buf expect)
   (define actual (buf-lookahead! buf 1))
@@ -122,7 +148,7 @@
   (not (null? result)))
 
 (define (collect-char in predfn)
-  (list->string (collect in predfn buf-consume!)))
+  (list->string (map chobj-char (collect in predfn buf-consume!))))
 
 (define (consume-all in predfn)
   (when (predfn in)
